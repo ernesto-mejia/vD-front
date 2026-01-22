@@ -1,0 +1,35 @@
+<div *ngIf="showPrompt" class="push-notification-prompt">
+  <div class="prompt-container">
+    <button type="button" class="close-btn" (click)="dismiss()" aria-label="Cerrar">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <div class="prompt-icon">
+      <i class="fas fa-bell fa-2x"></i>
+    </div>
+
+    <h3 class="prompt-title">¿Activar notificaciones push?</h3>
+
+    <p class="prompt-message">
+      Recibe notificaciones importantes directamente en tu navegador, incluso cuando la aplicación esté cerrada.
+    </p>
+
+    <div class="prompt-actions">
+      <button type="button" class="btn btn-primary" (click)="allowNotifications()">
+        <i class="fas fa-check me-2"></i>
+        Activar
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="denyNotifications()">
+        <i class="fas fa-times me-2"></i>
+        No, gracias
+      </button>
+    </div>
+
+    <div class="prompt-benefits mt-3">
+      <small class="text-muted">
+        <i class="fas fa-shield-alt me-1"></i>
+        Puedes desactivarlas en cualquier momento desde la configuración de tu navegador
+      </small>
+    </div>
+  </div>
+</div>

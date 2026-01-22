@@ -1,0 +1,205 @@
+<div class="row g-3">
+  <!-- Toggle Vista Global/Personal -->
+  <div class="col-12">
+    <div class="d-flex justify-content-end align-items-center mb-3">
+      <div class="btn-group" role="group" aria-label="Modo de vista">
+        <input type="radio" class="btn-check" name="viewMode" id="viewGlobal" value="global"
+               [(ngModel)]="viewMode" (change)="onViewModeChange()">
+        <label class="btn btn-outline-primary" for="viewGlobal">
+          <i class="fa fa-globe me-1"></i> Vista Global
+        </label>
+
+        <input type="radio" class="btn-check" name="viewMode" id="viewPersonal" value="personal"
+               [(ngModel)]="viewMode" (change)="onViewModeChange()">
+        <label class="btn btn-outline-primary" for="viewPersonal">
+          <i class="fa fa-user me-1"></i> Mis Notificaciones
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Summary -->
+  <div class="col-12">
+    <div class="">
+      <div class="card-header d-flex justify-content-between align-items-center">
+
+        <!-- <button class="btn btn-sm btn-outline-primary" (click)="refresh()">
+          <i class="fa fa-refresh"></i> Actualizar
+        </button> -->
+      </div>
+      <div class="card-body">
+        <!-- Loading / Error states -->
+        <div *ngIf="loading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+        <div *ngIf="error && !loading" class="alert alert-danger">{{ error }}</div>
+
+        <!-- Dashboard metrics -->
+        <div *ngIf="dashboard && !loading" class="row g-3">
+          <div class="col-md-3">
+            <div class=" bg-light">
+              <div class="card-body text-center">
+                <h3 class="mb-0">{{ dashboard.totalNotifications }}</h3>
+                <small class="text-muted">Total Notificaciones</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class=" bg-warning bg-opacity-25">
+              <div class="card-body text-center">
+                <h3 class="mb-0">{{ dashboard.pendingCount }}</h3>
+                <small class="text-muted">Pendientes</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class=" bg-info bg-opacity-25">
+              <div class="card-body text-center">
+                <h3 class="mb-0">{{ dashboard.avgResponseTimeMinutes | number:'1.1-1' }}</h3>
+                <small class="text-muted">Tiempo Resp. (min)</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+          <div class=" bg-success bg-opacity-25">
+            <div class="card-body text-center">
+              <h3 class="mb-0">{{ dashboard.byStatus.attended || 0 }}</h3>
+              <small class="text-muted">Atendidas</small>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por Módulo -->
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-header">
+        <h6 class="mb-0">Por Módulo</h6>
+      </div>
+      <div class="card-body card-body-scroll">
+        <div *ngIf="moduleBreakdown.length > 0; else noModuleData">
+          <div *ngFor="let m of moduleBreakdown" class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span>{{ getModuleLabel(m.module) }}</span>
+              <span class="badge bg-primary">{{ m.count }} ({{ m.percentage }}%)</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" role="progressbar" [style.width.%]="m.percentage"></div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noModuleData>
+          <div class="text-center text-muted py-4">
+            <p class="mb-0">Sin datos por módulo</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por Severidad -->
+  <div class="col-md-3" *ngIf="dashboard">
+    <div class="card h-100">
+      <div class="card-header">
+        <h6 class="mb-0">Por Severidad</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span><i class="fa fa-info-circle text-info"></i> Info</span>
+            <span class="badge bg-info">{{ dashboard.bySeverity.info || 0 }}</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span><i class="fa fa-exclamation-triangle text-warning"></i> Warning</span>
+            <span class="badge bg-warning text-dark">{{ dashboard.bySeverity.warning || 0 }}</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span><i class="fa fa-exclamation-circle text-danger"></i> Critical</span>
+            <span class="badge bg-danger">{{ dashboard.bySeverity.critical || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por Estado -->
+  <div class="col-md-3" *ngIf="dashboard">
+    <div class="card h-100">
+      <div class="card-header">
+        <h6 class="mb-0">Por Estado</h6>
+      </div>
+      <div class="card-body">
+        <div *ngFor="let status of ['pending', 'sent', 'viewed', 'attended', 'accepted', 'rejected']" class="mb-2">
+          <div class="d-flex justify-content-between">
+            <span>{{ getStatusLabel(status) }}</span>
+            <span class="badge bg-secondary">{{ dashboard.byStatus[status] || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Radar Chart -->
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-header">
+        <h6 class="mb-0">Analítica por Día (Radar)</h6>
+      </div>
+      <div class="card-body">
+        <div *ngIf="radarData && radarData.points && radarData.points.length > 0; else noRadarData">
+          <div #radarChart class="w-100" style="height:300px"></div>
+        </div>
+        <ng-template #noRadarData>
+          <div class="text-center text-muted py-5">
+            <i class="fa fa-chart-pie fa-3x mb-3 opacity-25"></i>
+            <p>No hay datos suficientes para mostrar el gráfico</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tendencia Semanal -->
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-header">
+        <h6 class="mb-0">Tendencia Semanal</h6>
+      </div>
+      <div class="card-body">
+        <div *ngIf="dashboard?.weeklyTrend?.length; else noTrendData" class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Día</th>
+                <th>Fecha</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of dashboard?.weeklyTrend || []">
+                <td>{{ t.day }}</td>
+                <td>{{ t.date }}</td>
+                <td><span class="badge bg-primary">{{ t.count }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noTrendData>
+          <div class="text-center text-muted py-5">
+            <i class="fa fa-chart-line fa-3x mb-3 opacity-25"></i>
+            <p>No hay datos de tendencia</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

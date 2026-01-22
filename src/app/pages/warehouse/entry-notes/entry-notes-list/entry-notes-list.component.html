@@ -1,0 +1,105 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row">
+    <div class="col-12">
+      <section class="card shadow-sm">
+        <header class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <h5 class="mb-0">
+              <i class="fas fa-clipboard-check me-2"></i>Notas de Entrada
+            </h5>
+            <small class="text-muted">Seguimiento por orden de compra aprobada</small>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-outline-primary"
+              [class.active]="filterStatus === 'pending'"
+              (click)="setFilter('pending')"
+              type="button"
+            >
+              Pendientes
+            </button>
+            <button
+              class="btn btn-outline-primary"
+              [class.active]="filterStatus === 'completed'"
+              (click)="setFilter('completed')"
+              type="button"
+            >
+              Completadas
+            </button>
+            <button
+              class="btn btn-outline-primary"
+              [class.active]="filterStatus === 'all'"
+              (click)="setFilter('all')"
+              type="button"
+            >
+              Todas
+            </button>
+          </div>
+        </header>
+
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Cargando notas de entrada...</p>
+          </div>
+
+          <div class="table-responsive" *ngIf="!loading">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Orden de compra</th>
+                  <th>Proveedor</th>
+                  <th>Entrega estimada</th>
+                  <th>Estado</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let note of filteredNotes">
+                  <td class="fw-semibold">{{ note.purchase_order_code }}</td>
+                  <td>{{ note.provider_name }}</td>
+                  <td>{{ note.estimated_delivery }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [ngClass]="note.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'"
+                    >
+                      {{ note.status === 'completed' ? 'Completada' : 'Pendiente' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        (click)="goToPreview(note)"
+                      >
+                        Vista previa
+                      </button>
+                      <button
+                        class="btn btn-primary"
+                        type="button"
+                        (click)="goToScan(note)"
+                      >
+                        Escanear
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="!filteredNotes.length">
+                  <td colspan="5" class="text-center text-muted py-4">
+                    No hay notas de entrada en este filtro.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,36 @@
+<div *ngIf="product?.remplazos?.length; else noRemplazos">
+  <div class="table-responsive">
+    <table class="table table-sm table-striped align-middle mt-2">
+      <thead class="table-light">
+        <tr>
+          <th>Producto</th>
+          <th># Catálogo</th>
+          <th>Proveedor</th>
+          <th>Observaciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rem of product.remplazos">
+          <td>
+            {{
+              rem.name ||
+                rem.item_name ||
+                rem.item?.name ||
+                rem.replacement_item?.name ||
+                rem.replacement_item_name ||
+                rem.sku ||
+                (rem.replacement_item_id ?? rem.item_id ?? "-")
+            }}
+          </td>
+          <td>{{ getRemplazoProviderCode(rem) }}</td>
+          <td>{{ getRemplazoProviderName(rem) }}</td>
+          <td>{{ rem.observations || "-" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<ng-template #noRemplazos>
+  <p class="text-muted mb-0">No hay remplazos relacionados para este producto.</p>
+</ng-template>

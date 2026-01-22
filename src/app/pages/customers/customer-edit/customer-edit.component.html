@@ -1,0 +1,1582 @@
+<!-- Sidebar -->
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<!-- Contenido principal -->
+<div class="p-5 p-sm-5" lang="es">
+  <div class="container">
+    <!-- Contenido principal -->
+    <div *ngIf="!loading && compania" class="card shadow-sm">
+      <div class="card-header bg-secondary text-white">
+        <div
+          class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+        >
+          <div class="flex-grow-1">
+            <h5 class="mb-0">Editar Cliente</h5>
+            <small class="opacity-75" *ngIf="compania.company">
+              {{ compania.company }}
+            </small>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-secondary btn-outline-light"
+              (click)="goBack()"
+              type="button"
+              aria-label="Cancelar"
+            >
+              <i class="fas fa-times me-1"></i>
+              Cancelar
+            </button>
+            <button
+              class="btn btn-success"
+              (click)="saveCustomer()"
+              type="button"
+              aria-label="Guardar Cambios"
+            >
+              <i class="fas fa-save me-1"></i>
+              Guardar Cambios
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Pestañas de navegación -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              [class.active]="activeTab === 'info'"
+              (click)="setActiveTab('info')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'info'"
+              aria-label="Información General"
+            >
+              <i class="fas fa-info-circle me-1"></i>
+              Información General
+            </button>
+          </li>
+          <li
+            class="nav-item"
+            role="presentation"
+            *ngIf="canViewCustomerContacts"
+          >
+            <button
+              class="nav-link"
+              [class.active]="activeTab === 'contacts'"
+              (click)="setActiveTab('contacts')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'contacts'"
+              aria-label="Contactos"
+            >
+              <i class="fas fa-users me-1"></i>
+              Contactos
+              <span class="badge bg-secondary ms-1">{{
+                contactos.length
+              }}</span>
+            </button>
+          </li>
+          <li
+            class="nav-item"
+            role="presentation"
+            *ngIf="canViewCustomerAddresses"
+          >
+            <button
+              class="nav-link"
+              [class.active]="activeTab === 'addresses'"
+              (click)="setActiveTab('addresses')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'addresses'"
+              aria-label="Direcciones"
+            >
+              <i class="fas fa-map-marker-alt me-1"></i>
+              Direcciones
+              <span class="badge bg-secondary ms-1">{{
+                direcciones.length
+              }}</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              [class.active]="activeTab === 'taxData'"
+              (click)="setActiveTab('taxData')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'taxData'"
+              aria-label="Datos Fiscales"
+            >
+              <i class="fas fa-receipt me-1"></i>
+              Datos Fiscales
+            </button>
+          </li>
+          <li
+            class="nav-item"
+            role="presentation"
+            *ngIf="canViewCustomerDocuments"
+          >
+            <button
+              class="nav-link"
+              [class.active]="activeTab === 'documents'"
+              (click)="setActiveTab('documents')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'documents'"
+              aria-label="Documentos"
+            >
+              <i class="fas fa-file-alt me-1"></i>
+              Documentos
+              <span class="badge bg-secondary ms-1">{{
+                documentos.length
+              }}</span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation" *ngIf="hasContracts()">
+            <button
+              class="nav-link"
+              [class.active]="activeTab === 'contracts'"
+              (click)="setActiveTab('contracts')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === 'contracts'"
+              aria-label="Contratos"
+            >
+              <i class="fas fa-file-contract me-1"></i>
+              Contratos
+              <span class="badge bg-secondary ms-1">{{
+                contratos.length
+              }}</span>
+            </button>
+          </li>
+        </ul>
+
+        <!-- Contenido de las pestañas -->
+        <div class="tab-content">
+          <!-- Información General -->
+          <div
+            *ngIf="activeTab === 'info'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <h6 class="section-title">
+              <i class="fas fa-building me-2"></i>
+              Información General del Cliente
+            </h6>
+            <div class="row g-3">
+              <!-- Nombre Corto -->
+              <div class="col-md-6">
+                <label class="form-label fw-bold"
+                  >Nombre comercial <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="compania.shortname"
+                  placeholder="Nombre comercial del cliente"
+                  required
+                  disabled
+                />
+              </div>
+
+              <!-- Razón Social -->
+              <div class="col-md-6">
+                <label class="form-label fw-bold"
+                  >Razón Social <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="compania.company"
+                  placeholder="Razón social completa"
+                  required
+                  disabled
+                />
+              </div>
+
+              <!-- RFC -->
+              <div class="col-md-6">
+                <label class="form-label fw-bold"
+                  >RFC <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="compania.tax_id"
+                  (blur)="validateRFC(compania.tax_id || '')"
+                  placeholder="RFC del cliente"
+                  maxlength="13"
+                  required
+                  disabled
+                />
+              </div>
+
+              <!-- Clave -->
+              <!-- <div class="col-md-6">
+                <label class="form-label fw-bold">Clave</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="compania.other_id"
+                  placeholder="Clave del cliente"
+                  disabled>
+              </div> -->
+
+              <!-- Website -->
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Sitio Web</label>
+                <input
+                  type="url"
+                  class="form-control"
+                  [(ngModel)]="compania.website"
+                  placeholder="https://www.ejemplo.com"
+                />
+              </div>
+
+              <!-- Tipo de Compañía -->
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Tipo de Compañía</label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="compania.company_type"
+                  disabled
+                >
+                  <option value="">Seleccione un tipo</option>
+                  <option
+                    *ngFor="let type of companyTypes"
+                    [value]="type.value"
+                  >
+                    {{ type.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Ámbito de la Compañía -->
+              <!-- <div class="col-md-6">
+                <label class="form-label fw-bold">Alcance de compañia</label>
+                <select class="form-select" [(ngModel)]="compania.company_scope">
+                  <option value="">Seleccione un alcance</option>
+                  <option *ngFor="let scope of companyScopes" [value]="scope.value">
+                    {{ scope.label }}
+                  </option>
+                </select>
+              </div> -->
+            </div>
+          </div>
+
+          <!-- Contactos -->
+          <div
+            *ngIf="activeTab === 'contacts'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="section-title mb-0">
+                <i class="fas fa-users me-2"></i>
+                Contactos del Cliente
+              </h6>
+              <button
+                class="btn btn-primary btn-sm"
+                (click)="createContact()"
+                type="button"
+                *ngIf="canCreateCustomerContacts"
+              >
+                <i class="fas fa-plus me-1"></i>
+                Agregar Contacto
+              </button>
+            </div>
+
+            <div *ngIf="contactos.length === 0" class="empty-state">
+              <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+              <p class="text-muted">No hay contactos registrados</p>
+            </div>
+
+            <div class="row g-3">
+              <div *ngFor="let contacto of contactos" class="col-lg-6 col-xl-4">
+                <div class="card contact-card h-100">
+                  <div class="card-header">
+                    <div
+                      class="d-flex justify-content-between align-items-start"
+                    >
+                      <h6 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        {{ getContactFullName(contacto) }}
+                      </h6>
+                      <div class="btn-group btn-group-sm">
+                        <button
+                          class="btn btn-outline-primary"
+                          (click)="editContact(contacto)"
+                          type="button"
+                          title="Editar contacto"
+                          *ngIf="canEditCustomerContacts"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          class="btn btn-outline-danger"
+                          (click)="deleteContact(contacto)"
+                          type="button"
+                          title="Eliminar contacto"
+                          *ngIf="canDeleteCustomerContacts"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="contacto.email" class="mb-2">
+                      <label class="field-label small">Email:</label>
+                      <div class="field-value small">
+                        <i class="fas fa-envelope me-1 text-primary"></i>
+                        <a [href]="'mailto:' + contacto.email">{{
+                          contacto.email
+                        }}</a>
+                      </div>
+                    </div>
+                    <div *ngIf="contacto.phone" class="mb-2">
+                      <label class="field-label small">Teléfono:</label>
+                      <div class="field-value small">
+                        <i class="fas fa-phone me-1 text-success"></i>
+                        <span *ngIf="contacto.contact_lada">({{ contacto.contact_lada }}) </span>{{ contacto.phone }}
+                      </div>
+                    </div>
+                    <div *ngIf="contacto.contact_extension" class="mb-2">
+                      <label class="field-label small">Extensión:</label>
+                      <div class="field-value small">
+                        <i class="fas fa-hashtag me-1 text-secondary"></i>
+                        {{ contacto.contact_extension }}
+                      </div>
+                    </div>
+                    <div *ngIf="contacto.job_position" class="mb-2">
+                      <label class="field-label small">Puesto:</label>
+                      <div class="field-value small">
+                        <i class="fas fa-briefcase me-1 text-info"></i>
+                        {{ contacto.job_position }}
+                      </div>
+                    </div>
+                    <div *ngIf="contacto.contact_department">
+                      <label class="field-label small">Departamento:</label>
+                      <div class="field-value small">
+                        <i class="fas fa-building me-1 text-warning"></i>
+                        {{ contacto.contact_department }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direcciones -->
+          <div
+            *ngIf="activeTab === 'addresses'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="section-title mb-0">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                Direcciones del Cliente
+              </h6>
+              <button
+                class="btn btn-primary btn-sm"
+                (click)="createAddress()"
+                type="button"
+                *ngIf="canCreateCustomerAddresses"
+              >
+                <i class="fas fa-plus me-1"></i>
+                Agregar Dirección
+              </button>
+            </div>
+
+            <div *ngIf="direcciones.length === 0" class="empty-state">
+              <i class="fas fa-map-marker-alt fa-3x mb-3 text-muted"></i>
+              <p class="text-muted">No hay direcciones registradas</p>
+              <button
+                class="btn btn-primary mt-2"
+                (click)="createAddress()"
+                type="button"
+                *ngIf="canCreateCustomerAddresses"
+              >
+                <i class="fas fa-plus me-1"></i>
+                Agregar Primera Dirección
+              </button>
+            </div>
+
+            <div *ngIf="direcciones.length > 0" class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Dirección Completa</th>
+                    <th>Código Postal</th>
+                    <th>Ciudad</th>
+                    <th>Estado</th>
+                    <th>Contactos</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let direccion of direcciones">
+                    <td>
+                      <strong>{{ direccion.shortname }}</strong>
+                    </td>
+                    <td>
+                      <div class="obs-truncate-250">
+                        {{ getFullAddress(direccion) }}
+                      </div>
+                    </td>
+                    <td>{{ direccion.zipcode || "N/A" }}</td>
+                    <td>{{ direccion.city || "N/A" }}</td>
+                    <td>{{ direccion.state || "N/A" }}</td>
+                    <td>
+                      <span class="badge bg-info">
+                        {{
+                          direccion.contact_addresses?.length || 0
+                        }}
+                        contacto(s)
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <div class="btn-group btn-group-sm">
+                        <button
+                          class="btn btn-outline-primary"
+                          (click)="viewAddress(direccion)"
+                          type="button"
+                          title="Ver"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          class="btn btn-outline-warning"
+                          (click)="editAddress(direccion)"
+                          type="button"
+                          title="Editar"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          class="btn btn-outline-danger"
+                          (click)="deleteAddress(direccion)"
+                          type="button"
+                          title="Eliminar"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Datos Fiscales -->
+          <div
+            *ngIf="activeTab === 'taxData'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="section-title mb-0">
+                <i class="fas fa-receipt me-2"></i>
+                Información Fiscal
+              </h6>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="row g-3">
+                  <!-- Régimen Fiscal -->
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">Régimen Fiscal</label>
+                    <select
+                      class="form-select"
+                      [(ngModel)]="compania!.tax_regime!.id"
+                      (ngModelChange)="onTaxRegimeChange()"
+                    >
+                      <option [ngValue]="null">Seleccione un régimen</option>
+                      <option
+                        *ngFor="let regime of taxRegimes"
+                        [value]="regime.id"
+                      >
+                        {{ regime.tax_regime }} - {{ regime.description }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Uso de CFDI Preferido -->
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold"
+                      >Uso de CFDI Preferido</label
+                    >
+                    <select
+                      class="form-select"
+                      [(ngModel)]="compania!.tax_preferred_concept!.id"
+                      (ngModelChange)="onTaxConceptChange()"
+                    >
+                      <option [ngValue]="null">Seleccione un uso</option>
+                      <option
+                        *ngFor="let concept of taxConcepts"
+                        [value]="concept.id"
+                      >
+                        {{ concept.tax_concept }} - {{ concept.description }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Documentos Requeridos de Cumplimiento -->
+                  <div class="col-12">
+                    <hr />
+                    <h6 class="mb-3">
+                      <i class="fas fa-file-upload me-2"></i>
+                      Documentación Fiscal
+                      <span class="badge bg-secondary ms-2" *ngIf="requiredDocuments.length > 0">
+                        {{ getDocumentCompliancePercentage() }}% completado
+                      </span>
+                      <span *ngIf="areAllDocumentsComplete()" class="badge bg-success ms-1">
+                        <i class="fas fa-check-circle"></i>
+                      </span>
+                    </h6>
+                  </div>
+
+                  <!-- Loading state -->
+                  <div class="col-12" *ngIf="loadingDocuments">
+                    <div class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                      </div>
+                      <p class="text-muted mt-2">Cargando documentos...</p>
+                    </div>
+                  </div>
+
+                  <!-- Documentos dinámicos -->
+                  <ng-container *ngIf="!loadingDocuments && requiredDocuments.length > 0">
+                    <div *ngFor="let doc of requiredDocuments" class="col-md-4 col-lg-3 mb-3">
+                      <div class="document-card border rounded p-3 h-100 position-relative"
+                           [ngClass]="{'border-success': doc.status === 'complete', 'border-warning': doc.status !== 'complete'}">
+                        <!-- Botón eliminar documento requerido -->
+                        <button *ngIf="canEditCustomers" type="button"
+                                class="btn btn-sm btn-link text-danger position-absolute"
+                                style="top: 5px; right: 5px; padding: 0;"
+                                title="Eliminar documento requerido"
+                                (click)="removeRequiredDocument(doc)">
+                          <i class="fas fa-times-circle"></i>
+                        </button>
+                        <div class="text-center">
+                          <div class="document-icon mb-2">
+                            <i class="fas fa-2x"
+                               [ngClass]="doc.status === 'complete' ? 'fa-file-check text-success' : 'fa-file-upload text-warning'"></i>
+                          </div>
+                          <h6 class="document-title mb-2 small">{{ doc.document_type || 'Documento' }}</h6>
+                          <span class="badge mb-2"
+                                [ngClass]="doc.status === 'complete' ? 'bg-success' : 'bg-warning'">
+                            {{ doc.status === 'complete' ? 'Cargado' : 'Pendiente' }}
+                          </span>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-center gap-1 mt-2">
+                          <ng-container *ngIf="!doc.file_url">
+                            <label class="btn btn-sm btn-primary" [for]="'upload-' + doc.id">
+                              <i class="fas fa-upload"></i>
+                              <input type="file" [id]="'upload-' + doc.id" class="d-none"
+                                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                     (change)="uploadDocumentFile(doc, $event)"
+                                     [disabled]="uploadingDocument === doc.id">
+                            </label>
+                            <div *ngIf="uploadingDocument === doc.id" class="spinner-border spinner-border-sm text-primary" role="status">
+                              <span class="visually-hidden">Subiendo...</span>
+                            </div>
+                          </ng-container>
+                          <ng-container *ngIf="doc.file_url">
+                            <a [href]="doc.file_url" target="_blank" class="btn btn-sm btn-outline-info" title="Ver">
+                              <i class="fas fa-eye"></i>
+                            </a>
+                            <label class="btn btn-sm btn-outline-primary" [for]="'edit-' + doc.id" title="Cambiar">
+                              <i class="fas fa-edit"></i>
+                              <input type="file" [id]="'edit-' + doc.id" class="d-none"
+                                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                     (change)="uploadDocumentFile(doc, $event)"
+                                     [disabled]="uploadingDocument === doc.id">
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar archivo"
+                                    (click)="removeDocumentFile(doc)">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <!-- Mensaje si no hay documentos -->
+                  <div class="col-12" *ngIf="!loadingDocuments && requiredDocuments.length === 0">
+                    <div class="alert alert-light text-center">
+                      <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                      <p class="text-muted mb-0">No hay documentos de cumplimiento configurados.</p>
+                    </div>
+                  </div>
+
+                  <!-- Agregar nuevos documentos requeridos -->
+                  <div class="col-12 mt-3" *ngIf="canEditCustomers">
+                    <hr class="my-3">
+                    <h6 class="mb-3">
+                      <i class="fas fa-plus-circle me-2"></i>
+                      Agregar Documentos Requeridos
+                    </h6>
+                    <div class="row g-2 align-items-end">
+                      <div class="col-md-8">
+                        <label class="form-label">Seleccione los documentos a requerir</label>
+                        <ng-select
+                          [items]="documentTypes"
+                          bindLabel="name"
+                          bindValue="id"
+                          [multiple]="true"
+                          [(ngModel)]="selectedDocumentTypeIds"
+                          [ngModelOptions]="{standalone: true}"
+                          placeholder="Seleccione uno o más documentos"
+                          [searchable]="true"
+                          [clearable]="true"
+                          notFoundText="No hay más tipos de documentos disponibles"
+                          [closeOnSelect]="false"
+                          [loading]="loadingDocumentTypes"
+                          loadingText="Cargando tipos de documentos..."
+                        >
+                        </ng-select>
+                      </div>
+                      <div class="col-md-4">
+                        <button type="button" class="btn btn-primary w-100"
+                                (click)="addRequiredDocuments()"
+                                [disabled]="selectedDocumentTypeIds.length === 0 || addingDocuments">
+                          <span *ngIf="addingDocuments" class="spinner-border spinner-border-sm me-1"></span>
+                          <i *ngIf="!addingDocuments" class="fas fa-plus me-1"></i>
+                          Agregar Documentos
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Estado de Compliance -->
+                  <div class="col-12 mt-3" *ngIf="requiredDocuments.length > 0">
+                    <div class="alert alert-info d-flex align-items-center">
+                      <i class="fas fa-info-circle me-2"></i>
+                      <div>
+                        <strong>Estado de Cumplimiento:</strong>
+                        <span class="badge ms-2" [ngClass]="getComplianceStatusClass()">
+                          {{ getComplianceStatusText() }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documentos -->
+          <div
+            *ngIf="activeTab === 'documents'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="section-title mb-0">
+                <i class="fas fa-file-alt me-2"></i>
+                Documentos del Cliente
+              </h6>
+            </div>
+
+            <div *ngIf="documentos.length === 0" class="empty-state">
+              <i class="fas fa-file-alt fa-3x mb-3 text-muted"></i>
+              <p class="text-muted">No hay documentos disponibles</p>
+            </div>
+
+            <div class="table-responsive" *ngIf="documentos.length > 0">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>No. Documento</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let doc of documentos">
+                    <td>
+                      <strong>{{ doc.document_number || "N/A" }}</strong>
+                    </td>
+                    <td>{{ doc.document_type || "N/A" }}</td>
+                    <td>{{ doc.document_date || "N/A" }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [ngClass]="
+                          getDocumentStatusClass(
+                            doc.document_status || 'Sin estado'
+                          )
+                        "
+                      >
+                        {{ doc.document_status || "Sin estado" }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <button
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="viewDocument(doc)"
+                        type="button"
+                      >
+                        <i class="fas fa-eye"></i>
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Contratos -->
+          <div
+            *ngIf="activeTab === 'contracts' && hasContracts()"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="section-title mb-0">
+                <i class="fas fa-file-contract me-2"></i>
+                Contratos del Cliente
+              </h6>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>No. Contrato</th>
+                    <th>Descripción</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let contrato of contratos">
+                    <td>
+                      <strong>{{ contrato.contract_number || "N/A" }}</strong>
+                    </td>
+                    <td>
+                      <div class="obs-truncate-250">
+                        {{ contrato.description || "Sin descripción" }}
+                      </div>
+                    </td>
+                    <td>{{ contrato.start_date || "N/A" }}</td>
+                    <td>{{ contrato.end_date || "N/A" }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        [ngClass]="
+                          getContractStatusClass(
+                            contrato.contract_status || 'Sin estado'
+                          )
+                        "
+                      >
+                        {{ contrato.contract_status || "Sin estado" }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <button
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="viewContract(contrato)"
+                        type="button"
+                      >
+                        <i class="fas fa-eye"></i>
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado cuando no hay datos -->
+    <div *ngIf="!loading && !compania" class="text-center py-5">
+      <div class="empty-state">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+        <h5>No se pudo cargar la información del cliente</h5>
+        <p class="text-muted">
+          Por favor, intente nuevamente o contacte al administrador.
+        </p>
+        <button class="btn btn-primary mt-3" (click)="goBack()" type="button">
+          <i class="fas fa-arrow-left me-1"></i>
+          Regresar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para contactos -->
+<div
+  class="modal fade"
+  [class.show]="showContactModal"
+  [style.display]="showContactModal ? 'block' : 'none'"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="contactModalLabel"
+  [attr.aria-hidden]="!showContactModal"
+>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="contactModalLabel">
+          <i class="fas fa-user me-2"></i>
+          <span *ngIf="modalMode === 'edit'">Editar Contacto</span>
+          <span *ngIf="modalMode === 'create'">Nuevo Contacto</span>
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closeContactModal()"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedContact">
+        <form>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold"
+                >Nombre <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedContact.contact_name"
+                name="contact_name"
+                placeholder="Nombre"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold"
+                >Apellido Paterno <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedContact.contact_lastname"
+                name="contact_lastname"
+                placeholder="Apellido paterno"
+                required
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label fw-bold">Lada</label>
+              <select
+                class="form-select"
+                [(ngModel)]="selectedContact.contact_lada"
+                name="contact_lada"
+              >
+                <option value="undefined">Seleccionar</option>
+                <option *ngFor="let code of phoneCodes" [value]="code.value">
+                  {{ code.label }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">Teléfono</label>
+              <input
+                class="form-control"
+                [(ngModel)]="selectedContact.phone"
+                name="phone"
+                placeholder="1234567890"
+                maxlength="10"
+                (keypress)="($event.charCode >= 48 && $event.charCode <= 57)"
+                (input)="formatPhone($event)"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-bold">Ext.</label>
+              <input
+                class="form-control"
+                [(ngModel)]="selectedContact.contact_extension"
+                name="contact_extension"
+                placeholder="101"
+                maxlength="6"
+                (keypress)="($event.charCode >= 48 && $event.charCode <= 57)"
+                (input)="onlyNumbers($event)"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold"
+                >Email <span class="text-danger">*</span></label
+              >
+              <input
+                type="email"
+                class="form-control"
+                [(ngModel)]="selectedContact.email"
+                name="email"
+                placeholder="correo@ejemplo.com"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Puesto</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedContact.job_position"
+                name="job_position"
+                placeholder="Puesto"
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold">Departamento</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedContact.contact_department"
+                name="contact_department"
+                placeholder="Departamento"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeContactModal()"
+        >
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveContact()">
+          <i class="fas fa-save me-1"></i>
+          {{ modalMode === "create" ? "Crear Contacto" : "Guardar Cambios" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para direcciones -->
+<div
+  class="modal fade"
+  [class.show]="showAddressModal"
+  [style.display]="showAddressModal ? 'block' : 'none'"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="addressModalLabel"
+  [attr.aria-hidden]="!showAddressModal"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addressModalLabel">
+          <i class="fas fa-map-marker-alt me-2"></i>
+          <span *ngIf="modalMode === 'view'"
+            >Ver Dirección{{
+              selectedAddress?.shortname
+                ? ": " + selectedAddress?.shortname
+                : ""
+            }}</span
+          >
+          <span *ngIf="modalMode === 'edit'">{{
+            selectedAddress?.shortname || "Editar Dirección"
+          }}</span>
+          <span *ngIf="modalMode === 'create'">Nueva Dirección</span>
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closeAddressModal()"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedAddress">
+        <!-- Pestañas de navegación -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              [class.active]="addressActiveTab === 'info'"
+              (click)="setAddressActiveTab('info')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="addressActiveTab === 'info'"
+              aria-label="Información de la Dirección"
+            >
+              <i class="fas fa-map-marker-alt me-1"></i>
+              Información
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              [class.active]="addressActiveTab === 'contacts'"
+              (click)="setAddressActiveTab('contacts')"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="addressActiveTab === 'contacts'"
+              aria-label="Contactos"
+            >
+              <i class="fas fa-users me-1"></i>
+              Contactos
+              <span class="badge bg-secondary ms-1">{{
+                selectedAddress.contact_addresses?.length || 0
+              }}</span>
+            </button>
+          </li>
+        </ul>
+
+        <!-- Contenido de las pestañas -->
+        <div class="tab-content" style="min-height: 500px">
+          <!-- Información de la Dirección -->
+          <div
+            *ngIf="addressActiveTab === 'info'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <h6 class="section-title">
+              <i class="fas fa-map-marker-alt me-2"></i>
+              Información General de la Dirección
+            </h6>
+            <p class="text-muted small mb-4">
+              Complete los datos básicos de la dirección. Los campos marcados
+              con * son obligatorios.
+            </p>
+            <form>
+              <div class="row g-3">
+                <!-- Fila 1: Nombre de la dirección -->
+                <div class="col-md-12">
+                  <label class="form-label fw-bold"
+                    >Nombre de la Dirección
+                    <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.shortname"
+                    name="shortname"
+                    placeholder="Ej: Oficina Principal, Sucursal Norte"
+                    required
+                    [readonly]="modalMode === 'view'"
+                  />
+                </div>
+
+                <!-- Fila 2: Código Postal y Colonia -->
+                <div class="col-md-6">
+                  <label class="form-label fw-bold"
+                    >Código Postal <span class="text-danger">*</span></label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="selectedAddress.zipcode"
+                      name="zipcode"
+                      (input)="onZipcodeInput($event)"
+                      placeholder="00000"
+                      maxlength="5"
+                      pattern="[0-9]*"
+                      required
+                      [readonly]="modalMode === 'view'"
+                    />
+                    <span class="input-group-text" *ngIf="loadingZipcode">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                  </div>
+                  <small class="text-muted" *ngIf="zipcodeData && modalMode !== 'view'">
+                    <i class="fas fa-check-circle text-success"></i> Datos cargados automáticamente
+                  </small>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Colonia <span class="text-danger">*</span></label>
+                  <!-- Select cuando hay múltiples colonias -->
+                  <select
+                    *ngIf="hasMultipleSettlements && modalMode !== 'view'"
+                    class="form-select"
+                    id="colony"
+                    [(ngModel)]="selectedAddress.colony"
+                    name="colony"
+                    (ngModelChange)="buildFullAddress()"
+                  >
+                    <option value="">Seleccione una colonia</option>
+                    <option *ngFor="let settlement of settlements" [value]="settlement">
+                      {{ settlement }}
+                    </option>
+                  </select>
+                  <!-- Input cuando hay una sola colonia o no hay datos del CP -->
+                  <input
+                    *ngIf="!hasMultipleSettlements || modalMode === 'view'"
+                    type="text"
+                    class="form-control"
+                    id="colony"
+                    [(ngModel)]="selectedAddress.colony"
+                    name="colony"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="Colonia"
+                    required
+                    [readonly]="modalMode === 'view' || zipcodeData !== null"
+                    [class.bg-light]="zipcodeData !== null && modalMode !== 'view'"
+                  />
+                </div>
+
+                <!-- Fila 3: Municipio y Ciudad (datos de la API) -->
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Municipio/Alcaldía</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.municipality"
+                    name="municipality"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="Municipio o Alcaldía"
+                    [readonly]="modalMode === 'view' || zipcodeData !== null"
+                    [class.bg-light]="zipcodeData !== null && modalMode !== 'view'"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Ciudad</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.city"
+                    name="city"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="Ciudad"
+                    [readonly]="modalMode === 'view' || zipcodeData !== null"
+                    [class.bg-light]="zipcodeData !== null && modalMode !== 'view'"
+                  />
+                </div>
+
+                <!-- Fila 4: Estado y País (datos de la API) -->
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Estado</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.state"
+                    name="state"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="Estado"
+                    [readonly]="modalMode === 'view' || zipcodeData !== null"
+                    [class.bg-light]="zipcodeData !== null && modalMode !== 'view'"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">País</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.country"
+                    name="country"
+                    (ngModelChange)="buildFullAddress()"
+                    value="MX"
+                    placeholder="MX"
+                    [readonly]="modalMode === 'view' || zipcodeData !== null"
+                    [class.bg-light]="zipcodeData !== null && modalMode !== 'view'"
+                  />
+                </div>
+
+                <!-- Separador visual para datos de la calle -->
+                <div class="col-12">
+                  <hr class="my-3">
+                  <h6 class="text-muted mb-3"><i class="fas fa-road me-2"></i>Datos de la Calle</h6>
+                </div>
+
+                <!-- Fila 5: Calle -->
+                <div class="col-md-12">
+                  <label class="form-label fw-bold"
+                    >Calle <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.street"
+                    name="street"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="Nombre de la calle"
+                    required
+                    [readonly]="modalMode === 'view'"
+                  />
+                </div>
+
+                <!-- Fila 6: Números exterior e interior -->
+                <div class="col-md-6">
+                  <label class="form-label fw-bold"
+                    >Número Exterior <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.outside_number"
+                    name="outside_number"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="123"
+                    required
+                    [readonly]="modalMode === 'view'"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-bold">Número Interior</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.inside_number"
+                    name="inside_number"
+                    (ngModelChange)="buildFullAddress()"
+                    placeholder="A, B, 1"
+                    [readonly]="modalMode === 'view'"
+                  />
+                </div>
+
+                <!-- Vista previa de la dirección -->
+                <div class="col-12">
+                  <label class="form-label fw-bold"
+                    >Vista Previa de la Dirección</label
+                  >
+                  <textarea
+                    title="view direction"
+                    class="form-control"
+                    [(ngModel)]="selectedAddress.address"
+                    name="address"
+                    rows="3"
+                    readonly
+                    style="background-color: #f8f9fa"
+                  >
+                  </textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Contactos de la Dirección -->
+          <div
+            *ngIf="addressActiveTab === 'contacts'"
+            class="tab-pane fade show active"
+            role="tabpanel"
+          >
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="section-title mb-0">
+                <i class="fas fa-users me-2"></i>
+                Contactos en esta Dirección
+              </h6>
+              <button
+                type="button"
+                class="btn btn-success btn-sm"
+                (click)="createAddressContact()"
+                *ngIf="modalMode !== 'view'"
+              >
+                <i class="fas fa-plus me-1"></i>
+                Agregar Contacto
+              </button>
+            </div>
+
+            <div
+              *ngIf="(selectedAddress.contact_addresses?.length || 0) === 0"
+              class="empty-state"
+            >
+              <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+              <p class="text-muted">
+                No hay contactos asociados a esta dirección
+              </p>
+            </div>
+
+            <div
+              *ngIf="selectedAddress.contact_addresses?.length"
+              class="table-responsive"
+            >
+              <table class="table table-sm">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Lada</th>
+                    <th>Teléfono</th>
+                    <th>Ext.</th>
+                    <th>Email</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="
+                      let contact of selectedAddress.contact_addresses;
+                      let i = index
+                    "
+                  >
+                    <td>{{ getContactAddressFullName(contact) }}</td>
+                    <td>{{ contact.contact_lada || "-" }}</td>
+                    <td>{{ contact.contact_phone || "N/A" }}</td>
+                    <td>{{ contact.contact_extension || "-" }}</td>
+                    <td>
+                      <ng-container *ngIf="contact.contact_email; else noEmail">
+                        <a [href]="'mailto:' + contact.contact_email">{{
+                          contact.contact_email
+                        }}</a>
+                      </ng-container>
+                      <ng-template #noEmail>N/A</ng-template>
+                    </td>
+                    <td class="text-center">
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary"
+                          (click)="viewAddressContact(contact)"
+                          *ngIf="modalMode === 'view'"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-warning"
+                          (click)="editAddressContact(contact, i)"
+                          *ngIf="modalMode !== 'view'"
+                        >
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger"
+                          (click)="deleteAddressContact(contact)"
+                          *ngIf="modalMode !== 'view'"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeAddressModal()"
+        >
+          <i class="fas fa-times me-1"></i>
+          {{ modalMode === "view" ? "Cerrar" : "Cancelar" }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="saveAddress()"
+          *ngIf="modalMode !== 'view' && addressActiveTab === 'info'"
+        >
+          <i class="fas fa-save me-1"></i>
+          {{ modalMode === "create" ? "Crear Dirección" : "Guardar Cambios" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para contactos de direcciones -->
+<div
+  class="modal fade"
+  [class.show]="showAddressContactModal"
+  [style.display]="showAddressContactModal ? 'block' : 'none'"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="addressContactModalLabel"
+  [attr.aria-hidden]="!showAddressContactModal"
+>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addressContactModalLabel">
+          <i class="fas fa-user me-2"></i>
+          <span *ngIf="addressContactModalMode === 'view'"
+            >Detalles de Contacto</span
+          >
+          <span *ngIf="addressContactModalMode === 'edit'"
+            >Editar Contacto</span
+          >
+          <span *ngIf="addressContactModalMode === 'create'"
+            >Nuevo Contacto</span
+          >
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closeAddressContactModal()"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedAddressContact">
+        <form>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold"
+                >Nombre <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedAddressContact.contact_name"
+                name="address_contact_name"
+                [readonly]="addressContactModalMode === 'view'"
+                placeholder="Nombre"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold"
+                >Apellido <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedAddressContact.contact_lastname"
+                name="address_contact_lastname"
+                [readonly]="addressContactModalMode === 'view'"
+                placeholder="Apellido"
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label fw-bold">Lada</label>
+              <select
+                class="form-select"
+                [(ngModel)]="selectedAddressContact.contact_lada"
+                name="address_contact_lada"
+                [disabled]="addressContactModalMode === 'view'"
+              >
+                <option [ngValue]="undefined">Seleccionar</option>
+                <option *ngFor="let code of phoneCodes" [value]="code.value">
+                  {{ code.label }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">Teléfono</label>
+              <input
+                type="tel"
+                class="form-control"
+                [(ngModel)]="selectedAddressContact.contact_phone"
+                name="address_contact_phone"
+                [readonly]="addressContactModalMode === 'view'"
+                placeholder="1234567890"
+                maxlength="10"
+                (keypress)="($event.charCode >= 48 && $event.charCode <= 57)"
+                (input)="formatPhoneAddressContact($event)"
+              />
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-bold">Ext.</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedAddressContact.contact_extension"
+                name="address_contact_extension"
+                [readonly]="addressContactModalMode === 'view'"
+                placeholder="101"
+                maxlength="6"
+                (keypress)="($event.charCode >= 48 && $event.charCode <= 57)"
+                (input)="onlyNumbers($event)"
+              />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Email</label>
+              <!-- Mostrar como enlace en modo 'view', input en modos 'edit'/'create' -->
+              <div *ngIf="addressContactModalMode === 'view'">
+                <ng-container
+                  *ngIf="
+                    selectedAddressContact.contact_email;
+                    else noAddressContactEmail
+                  "
+                >
+                  <a
+                    [href]="'mailto:' + selectedAddressContact.contact_email"
+                    >{{ selectedAddressContact.contact_email }}</a
+                  >
+                </ng-container>
+                <ng-template #noAddressContactEmail>N/A</ng-template>
+              </div>
+              <div *ngIf="addressContactModalMode !== 'view'">
+                <input
+                  type="email"
+                  class="form-control"
+                  [(ngModel)]="selectedAddressContact.contact_email"
+                  name="address_contact_email"
+                  placeholder="contacto@ejemplo.com"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Puesto</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedAddressContact.contact_job_position"
+                name="address_contact_position"
+                [readonly]="addressContactModalMode === 'view'"
+                placeholder="Puesto de trabajo"
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold">Departamento</label>
+              <input
+                type="text"
+                class="form-control"
+                [(ngModel)]="selectedAddressContact.contact_department"
+                name="address_contact_department"
+                [readonly]="addressContactModalMode === 'view'"
+                placeholder="Departamento"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeAddressContactModal()"
+        >
+          <i class="fas fa-times me-1"></i>
+          {{ addressContactModalMode === "view" ? "Cerrar" : "Cancelar" }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="saveAddressContact()"
+          *ngIf="addressContactModalMode !== 'view'"
+        >
+          <i class="fas fa-save me-1"></i>
+          {{
+            addressContactModalMode === "create"
+              ? "Crear Contacto"
+              : "Guardar Cambios"
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backdrop para modales -->
+<div
+  class="modal-backdrop fade"
+  [class.show]="showAddressModal || showContactModal || showAddressContactModal"
+  *ngIf="showAddressModal || showContactModal || showAddressContactModal"
+></div>

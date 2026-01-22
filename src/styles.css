@@ -1,0 +1,663 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Importar estilos de ng-select */
+@import "@ng-select/ng-select/themes/default.theme.css";
+
+/* COMPENSAR NAVBAR FIXED-TOP */
+body {
+  padding-top: 60px; /* Ajustar según altura real del navbar */
+}
+
+.layout {
+  min-height: calc(100vh - 60px);
+}
+
+.content {
+  padding-top: 20px;
+}
+
+/* ESTILO BÁSICO Y LIMPIO PARA SELECT */
+select:not(.form-select) {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  background-repeat: no-repeat;
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  appearance: none;
+}
+
+/* Los form-select de Bootstrap se quedan con su estilo nativo */
+select.form-select {
+  /* Estilo por defecto de Bootstrap - no modificar */
+}
+
+.btn-close {
+  background-color: white;
+  border: 1px solid white;
+  color: white;
+}
+
+  .btn-close {
+    background-color: white;
+    border: 1px solid white;
+    color: white;
+  }
+
+  /* ===== SCROLL HORIZONTAL PARA DATATABLE ===== */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+}
+
+/* Asegurar que la tabla tenga ancho suficiente para el scroll */
+#customersTable {
+    min-width: 800px; /* Ancho mínimo para forzar scroll horizontal */
+    width: 100% !important;
+}
+
+/* Opcional: Estilos visuales para el scroll */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* ========================================
+   SISTEMA DE DISEÑO EPICA - ESTILOS GLOBALES
+   ======================================== */
+
+/* ===== VARIABLES CSS ===== */
+:root {
+  /* Colores primarios */
+  --epica-primary: #0d6efd;
+  --epica-primary-dark: #0b5ed7;
+  --epica-primary-light: #3d8bfd;
+
+  /* Colores secundarios */
+  --epica-secondary: #6c757d;
+  --epica-secondary-dark: #5c636a;
+
+  /* Colores de estado */
+  --epica-success: #198754;
+  --epica-warning: #ffc107;
+  --epica-danger: #dc3545;
+  --epica-info: #0dcaf0;
+
+  /* Colores neutros */
+  --epica-white: #ffffff;
+  --epica-gray-100: #f8f9fa;
+  --epica-gray-200: #e9ecef;
+  --epica-gray-300: #dee2e6;
+  --epica-gray-400: #ced4da;
+  --epica-gray-500: #adb5bd;
+  --epica-gray-600: #6c757d;
+  --epica-gray-700: #495057;
+  --epica-gray-800: #343a40;
+  --epica-gray-900: #212529;
+
+  /* Tipografía */
+  --epica-font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --epica-font-size-xs: 0.75rem;
+  --epica-font-size-sm: 0.875rem;
+  --epica-font-size-base: 1rem;
+  --epica-font-size-lg: 1.125rem;
+  --epica-font-size-xl: 1.25rem;
+  --epica-font-size-2xl: 1.5rem;
+
+  /* Espaciado */
+  --epica-spacing-xs: 0.25rem;
+  --epica-spacing-sm: 0.5rem;
+  --epica-spacing-md: 1rem;
+  --epica-spacing-lg: 1.5rem;
+  --epica-spacing-xl: 2rem;
+
+  /* Bordes */
+  --epica-border-radius: 0.375rem;
+  --epica-border-radius-lg: 0.5rem;
+  --epica-border-radius-xl: 0.75rem;
+
+  /* Sombras */
+  --epica-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --epica-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --epica-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Transiciones */
+  --epica-transition: all 0.2s ease-in-out;
+}
+
+/* ===== TIPOGRAFÍA GLOBAL ===== */
+body {
+  font-family: var(--epica-font-family);
+  font-size: var(--epica-font-size-base);
+  color: var(--epica-gray-800);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--epica-gray-800);
+  margin-bottom: var(--epica-spacing-md);
+}
+
+/* ===== CARDS UNIFICADAS ===== */
+.epica-card,
+.card {
+  border: none;
+  border-radius: var(--epica-border-radius-xl);
+  box-shadow: var(--epica-shadow);
+  overflow: hidden;
+  background: var(--epica-white);
+}
+
+.epica-card-header,
+.card-header {
+  background-color: var(--epica-gray-100);
+  border-bottom: 1px solid var(--epica-gray-300);
+  padding: var(--epica-spacing-md) var(--epica-spacing-lg);
+}
+
+.epica-card-header.primary,
+.card-header.bg-primary {
+  background-color: var(--epica-primary) !important;
+  color: var(--epica-white);
+}
+
+.epica-card-header.secondary,
+.card-header.bg-secondary {
+  background-color: var(--epica-secondary) !important;
+  color: var(--epica-white);
+}
+
+.epica-card-title,
+.card-title {
+  margin: 0;
+  font-size: var(--epica-font-size-xl);
+  font-weight: 600;
+  color: inherit;
+}
+
+.epica-card-body,
+.card-body {
+  padding: var(--epica-spacing-lg);
+}
+
+.epica-card-footer,
+.card-footer {
+  background-color: var(--epica-gray-100);
+  border-top: 1px solid var(--epica-gray-300);
+  padding: var(--epica-spacing-md) var(--epica-spacing-lg);
+}
+
+/* ===== TABLAS UNIFICADAS ===== */
+.epica-table,
+.table {
+  width: 100%;
+  margin-bottom: 0;
+  font-size: var(--epica-font-size-sm);
+}
+
+.epica-table th,
+.table th {
+  background-color: var(--epica-gray-100);
+  border-bottom: 2px solid var(--epica-gray-300);
+  font-weight: 600;
+  color: var(--epica-gray-700);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.epica-table td,
+.table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--epica-gray-200);
+  color: var(--epica-gray-700);
+}
+
+.epica-table tbody tr:hover,
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.epica-table tbody tr:nth-of-type(odd),
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ===== FORMULARIOS UNIFICADOS ===== */
+.epica-form-label,
+.form-label {
+  font-size: var(--epica-font-size-sm);
+  font-weight: 500;
+  color: var(--epica-gray-700);
+  margin-bottom: var(--epica-spacing-xs);
+}
+
+.epica-form-control,
+.form-control {
+  font-size: var(--epica-font-size-sm);
+  border: 1px solid var(--epica-gray-400);
+  border-radius: var(--epica-border-radius);
+  padding: 0.5rem 0.75rem;
+  transition: var(--epica-transition);
+}
+
+.epica-form-control:focus,
+.form-control:focus {
+  border-color: var(--epica-primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  outline: none;
+}
+
+.epica-form-control:disabled,
+.form-control:disabled,
+.epica-form-control[readonly],
+.form-control[readonly] {
+  background-color: var(--epica-gray-200);
+  opacity: 0.8;
+}
+
+/* Select personalizado */
+.epica-form-select,
+.form-select {
+  font-size: var(--epica-font-size-sm);
+  border: 1px solid var(--epica-gray-400);
+  border-radius: var(--epica-border-radius);
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  background-color: var(--epica-white);
+  transition: var(--epica-transition);
+}
+
+/* Campo requerido asterisco */
+.required-asterisk {
+  color: var(--epica-danger);
+  font-weight: bold;
+  margin-right: 0.25rem;
+}
+
+/* Mensaje de error en formularios */
+.invalid-feedback {
+  font-size: var(--epica-font-size-xs);
+  color: var(--epica-danger);
+}
+
+/* ===== BOTONES UNIFICADOS ===== */
+.epica-btn,
+.btn {
+  font-size: var(--epica-font-size-sm);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--epica-border-radius);
+  transition: var(--epica-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.epica-btn:hover,
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--epica-shadow-sm);
+}
+
+.epica-btn:active,
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Botón primario */
+.epica-btn-primary,
+.btn-primary {
+  background-color: var(--epica-primary);
+  border-color: var(--epica-primary);
+  color: var(--epica-white);
+}
+
+.epica-btn-primary:hover,
+.btn-primary:hover {
+  background-color: var(--epica-primary-dark);
+  border-color: var(--epica-primary-dark);
+}
+
+/* Botón secundario */
+.epica-btn-secondary,
+.btn-secondary {
+  background-color: var(--epica-secondary);
+  border-color: var(--epica-secondary);
+  color: var(--epica-white);
+}
+
+.epica-btn-secondary:hover,
+.btn-secondary:hover {
+  background-color: var(--epica-secondary-dark);
+  border-color: var(--epica-secondary-dark);
+}
+
+/* Botón success */
+.epica-btn-success,
+.btn-success {
+  background-color: var(--epica-success);
+  border-color: var(--epica-success);
+  color: var(--epica-white);
+}
+
+/* Botón warning */
+.epica-btn-warning,
+.btn-warning {
+  background-color: var(--epica-warning);
+  border-color: var(--epica-warning);
+  color: var(--epica-gray-900);
+}
+
+/* Botón danger */
+.epica-btn-danger,
+.btn-danger {
+  background-color: var(--epica-danger);
+  border-color: var(--epica-danger);
+  color: var(--epica-white);
+}
+
+/* Botón outline */
+.epica-btn-outline-primary,
+.btn-outline-primary {
+  background-color: transparent;
+  border-color: var(--epica-primary);
+  color: var(--epica-primary);
+}
+
+.epica-btn-outline-primary:hover,
+.btn-outline-primary:hover {
+  background-color: var(--epica-primary);
+  color: var(--epica-white);
+}
+
+/* Botón transparente (para iconos de acciones) */
+.epica-btn-icon,
+.btn-transparent {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--epica-gray-600);
+  padding: 0.375rem 0.5rem;
+}
+
+.epica-btn-icon:hover,
+.btn-transparent:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--epica-gray-800);
+}
+
+/* Grupo de botones */
+.epica-btn-group,
+.btn-group {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.epica-btn-group .btn,
+.btn-group .btn {
+  border-radius: var(--epica-border-radius);
+}
+
+/* ===== DATATABLES UNIFICADO ===== */
+.dataTables_wrapper {
+  font-size: var(--epica-font-size-sm);
+}
+
+.dataTables_length select {
+  min-width: 140px !important;
+  border-radius: var(--epica-border-radius) !important;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem !important;
+  border: 1px solid var(--epica-gray-400) !important;
+  font-size: var(--epica-font-size-sm) !important;
+  color: var(--epica-gray-800) !important;
+  background-color: var(--epica-white) !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
+  background-repeat: no-repeat !important;
+}
+
+.dataTables_length select:focus {
+  border-color: var(--epica-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15) !important;
+  outline: none !important;
+}
+
+.dataTables_filter input {
+  border-radius: var(--epica-border-radius) !important;
+  padding: 0.5rem 0.75rem !important;
+  border: 1px solid var(--epica-gray-400) !important;
+  font-size: var(--epica-font-size-sm) !important;
+}
+
+.dataTables_filter input:focus {
+  border-color: var(--epica-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15) !important;
+  outline: none !important;
+}
+
+.dataTables_info {
+  font-size: var(--epica-font-size-sm);
+  color: var(--epica-gray-600);
+  padding-top: var(--epica-spacing-md);
+}
+
+.dataTables_paginate {
+  padding-top: var(--epica-spacing-md);
+}
+
+.dataTables_paginate .paginate_button {
+  padding: 0.375rem 0.75rem !important;
+  border-radius: var(--epica-border-radius) !important;
+  border: 1px solid var(--epica-gray-300) !important;
+  background: var(--epica-white) !important;
+  color: var(--epica-gray-700) !important;
+  margin: 0 0.125rem !important;
+  font-size: var(--epica-font-size-sm) !important;
+}
+
+.dataTables_paginate .paginate_button:hover {
+  background: var(--epica-gray-100) !important;
+  border-color: var(--epica-gray-400) !important;
+  color: var(--epica-gray-800) !important;
+}
+
+.dataTables_paginate .paginate_button.current {
+  background: var(--epica-primary) !important;
+  border-color: var(--epica-primary) !important;
+  color: var(--epica-white) !important;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== BADGES Y ESTADOS ===== */
+.epica-badge,
+.badge {
+  font-size: var(--epica-font-size-xs);
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  border-radius: var(--epica-border-radius);
+}
+
+.badge-active,
+.badge.bg-success {
+  background-color: var(--epica-success) !important;
+  color: var(--epica-white);
+}
+
+.badge-inactive,
+.badge.bg-secondary {
+  background-color: var(--epica-gray-500) !important;
+  color: var(--epica-white);
+}
+
+.badge-pending,
+.badge.bg-warning {
+  background-color: var(--epica-warning) !important;
+  color: var(--epica-gray-900);
+}
+
+/* ===== ICONOS ===== */
+.epica-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.epica-icon-sm {
+  font-size: 0.875rem;
+}
+
+.epica-icon-lg {
+  font-size: 1.25rem;
+}
+
+/* Colores de iconos de acción */
+.icon-view { color: var(--epica-info); }
+.icon-edit { color: var(--epica-warning); }
+.icon-delete { color: var(--epica-danger); }
+.icon-success { color: var(--epica-success); }
+
+/* ===== LAYOUT DE PÁGINAS ===== */
+.epica-page-container {
+  padding: var(--epica-spacing-lg);
+}
+
+.epica-page-header {
+  margin-bottom: var(--epica-spacing-lg);
+}
+
+.epica-page-title {
+  font-size: var(--epica-font-size-2xl);
+  font-weight: 600;
+  color: var(--epica-gray-800);
+  margin: 0;
+}
+
+/* ===== SECCIONES DE FORMULARIO ===== */
+.epica-form-section {
+  margin-bottom: var(--epica-spacing-xl);
+}
+
+.epica-form-section-title {
+  font-size: var(--epica-font-size-lg);
+  font-weight: 600;
+  color: var(--epica-gray-700);
+  margin-bottom: var(--epica-spacing-md);
+  padding-bottom: var(--epica-spacing-sm);
+  border-bottom: 2px solid var(--epica-gray-200);
+}
+
+/* ===== TABS UNIFICADOS ===== */
+.nav-tabs {
+  border-bottom: 2px solid var(--epica-gray-200);
+}
+
+.nav-tabs .nav-link {
+  font-size: var(--epica-font-size-sm);
+  font-weight: 500;
+  color: var(--epica-gray-600);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 1rem;
+  margin-bottom: -2px;
+  transition: var(--epica-transition);
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--epica-primary);
+  border-bottom-color: var(--epica-gray-300);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--epica-primary);
+  border-bottom-color: var(--epica-primary);
+  background: transparent;
+}
+
+.tab-content {
+  padding: var(--epica-spacing-lg) 0;
+}
+
+/* ===== ALERTAS ===== */
+.epica-alert,
+.alert {
+  border-radius: var(--epica-border-radius);
+  padding: var(--epica-spacing-md);
+  font-size: var(--epica-font-size-sm);
+  border: none;
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.1);
+  color: #055160;
+}
+
+.alert-success {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #0a3622;
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #664d03;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #58151c;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .epica-page-container {
+    padding: var(--epica-spacing-md);
+  }
+
+  .card-header {
+    padding: var(--epica-spacing-md);
+  }
+
+  .card-body {
+    padding: var(--epica-spacing-md);
+  }
+
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-group .btn {
+    width: 100%;
+    margin-bottom: var(--epica-spacing-xs);
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem;
+    font-size: var(--epica-font-size-xs);
+  }
+}
+

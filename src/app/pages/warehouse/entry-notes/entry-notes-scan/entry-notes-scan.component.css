@@ -1,0 +1,497 @@
+.scan-panel,
+.list-panel {
+  background: #f8f9fb;
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 520px;
+}
+
+.scan-form {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #e6e9ef;
+  position: relative;
+}
+
+.pending-item,
+.scanned-item {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #e6e9ef;
+  margin-bottom: 10px;
+}
+
+.pending-item .tag {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: #e6f0ff;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+}
+
+.scanned-item .tags {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scanned-qty-highlight {
+  display: inline-block;
+  background-color: #ffc107;
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* ===== OVERLAY DE CARGA ===== */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  text-align: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== MODAL DE PRODUCTOS FALTANTES ===== */
+.modal {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal.show {
+  display: block;
+  animation: modalFadeIn 0.3s ease-in;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+.missing-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.missing-item-card {
+  background: #fff;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.missing-item-header {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.missing-item-number {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  color: #000;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.missing-item-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.missing-item-qty {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.missing-item-observation {
+  margin-top: 8px;
+}
+
+.missing-item-observation label {
+  font-size: 0.9rem;
+  color: #495057;
+  margin-bottom: 4px;
+}
+
+.missing-item-observation textarea {
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.missing-item-observation textarea:focus {
+  border-color: #ffc107;
+  box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+/* ===== DISEÑO COMPACTO Y ESCALABLE ===== */
+
+/* Panel header compacto */
+.panel-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e6e9ef;
+}
+
+.panel-header-compact h6 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+/* Contenedor con scroll para productos escaneados */
+.scanned-products-scroll {
+  max-height: 450px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.scanned-products-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scanned-products-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.scanned-products-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.scanned-products-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Tarjeta de producto compacta */
+.scanned-product-compact {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-left: 3px solid #28a745;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.scanned-product-compact:hover {
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+  border-left-width: 4px;
+}
+
+/* Header del producto compacto */
+.product-compact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.product-compact-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.product-compact-number {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.product-compact-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2c3e50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-compact-total {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  color: #000;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(255, 193, 7, 0.3);
+}
+
+/* Lista de lotes compacta */
+.lots-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lot-compact-item {
+  background: #f8f9fb;
+  border-radius: 4px;
+  padding: 6px 8px;
+  border-left: 2px solid #28a745;
+  font-size: 0.8rem;
+}
+
+.lot-compact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lot-compact-number {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.75rem;
+}
+
+.lot-compact-qty {
+  background-color: #28a745;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.lot-compact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lot-compact-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.lot-compact-row i {
+  color: #6c757d;
+  width: 12px;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.lot-compact-text {
+  color: #495057;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.lot-compact-gtin {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #6c757d;
+}
+
+/* Estado vacío compacto */
+.empty-state-compact {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-state-compact i {
+  opacity: 0.3;
+}
+
+.empty-state-compact p {
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* Grid para productos completados */
+.completed-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.completed-products-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.completed-products-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.completed-products-grid::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.completed-products-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .scanned-products-scroll {
+    max-height: 350px;
+  }
+
+  .completed-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    max-height: 500px;
+  }
+}
+
+@media (max-width: 576px) {
+  .completed-products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-compact-name {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===== ESTILOS ORIGINALES (mantenidos por compatibilidad) ===== */
+
+/* Diseño sintetizado original (mantenido por compatibilidad) */
+.scanned-product-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #e6e9ef;
+  margin-bottom: 10px;
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 8px;
+}
+
+.total-badge {
+  background-color: #ffc107;
+  color: #000;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.lots-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.lot-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  background: #f8f9fb;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.lot-qty {
+  background-color: #28a745;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.lot-code {
+  color: #495057;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lot-gtin {
+  color: #6c757d;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

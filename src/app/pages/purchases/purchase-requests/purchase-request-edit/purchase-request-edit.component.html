@@ -1,0 +1,412 @@
+<app-sidebar></app-sidebar>
+<main class="main-content">
+  <div class="container-fluid py-4">
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando solicitud...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+      <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadPurchaseRequest()">
+        Reintentar
+      </button>
+    </div>
+
+    <ng-container *ngIf="!loading && !error && purchaseRequest">
+      <!-- Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex align-items-center">
+            <button class="btn btn-link text-muted p-0 me-3" routerLink="/purchases/purchase-requests">
+              <i class="bi bi-arrow-left fs-5"></i>
+            </button>
+            <div>
+              <h4 class="mb-1">
+                <i class="bi bi-pencil text-primary me-2"></i>
+                Editar Solicitud: {{ purchaseRequest.folio || purchaseRequest.request_number || 'Sin Folio' }}
+              </h4>
+              <p class="text-muted mb-0">Fase 1: Editar lista de productos requeridos</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form [formGroup]="form">
+        <div class="row">
+          <!-- Columna Principal -->
+          <div class="col-lg-8">
+            <!-- Datos Generales -->
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información de la Solicitud</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <!-- Toggle Contrato -->
+                  <div class="col-12">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="isContractRelated" formControlName="is_contract_related">
+                      <label class="form-check-label" for="isContractRelated">
+                        <i class="bi bi-file-earmark-text me-1"></i>
+                        Relacionada a un contrato
+                      </label>
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                      {{ isContractRelated ? 'Seleccione el contrato relacionado a esta solicitud' : 'Solicitud interna - especifique el destino y agregue productos' }}
+                    </small>
+                  </div>
+
+                  <!-- Selector de Contrato (si es relacionado a contrato) -->
+                  <div class="col-md-6" *ngIf="isContractRelated">
+                    <label class="form-label">Contrato <span class="text-danger">*</span></label>
+                    <select class="form-select" formControlName="contract_id" [class.is-invalid]="isFieldInvalid('contract_id')">
+                      <option [ngValue]="null">Seleccione un contrato...</option>
+                      <option *ngFor="let contract of contracts" [value]="contract.id">
+                        {{ contract.contract_number }} - {{ contract.name }}
+                        <span *ngIf="contract.provider?.shortname">({{ contract.provider?.shortname }})</span>
+                      </option>
+                    </select>
+                    <div *ngIf="loadingContracts" class="mt-1">
+                      <small class="text-muted">
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Cargando contratos...
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- Prioridad -->
+                  <div class="col-md-3">
+                    <label class="form-label">Prioridad <span class="text-danger">*</span></label>
+                    <select
+                      class="form-select"
+                      formControlName="priority"
+                      [class.is-invalid]="isFieldInvalid('priority')">
+                      <option *ngFor="let p of priorities" [value]="p.value">{{ p.label }}</option>
+                    </select>
+                  </div>
+
+                  <!-- Fecha Requerida -->
+                  <div class="col-md-3">
+                    <label class="form-label">Fecha Requerida <span class="text-danger">*</span></label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      formControlName="required_date"
+                      [min]="minDate"
+                      [class.is-invalid]="isFieldInvalid('required_date')">
+                    <div class="invalid-feedback">La fecha es requerida</div>
+                  </div>
+
+                  <!-- Título -->
+                  <div class="col-12">
+                    <label class="form-label">Título de la Solicitud <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="title"
+                      placeholder="Ej: Solicitud de material de oficina"
+                      [class.is-invalid]="isFieldInvalid('title')">
+                    <div class="invalid-feedback">El título es requerido</div>
+                  </div>
+
+                  <!-- Descripción -->
+                  <div class="col-12">
+                    <label class="form-label">Descripción</label>
+                    <textarea
+                      class="form-control"
+                      formControlName="description"
+                      rows="2"
+                      placeholder="Describa brevemente la solicitud..."></textarea>
+                  </div>
+
+                  <!-- Destino Manual (si no es contrato) -->
+                  <div class="col-12" *ngIf="!isContractRelated">
+                    <label class="form-label">Destino <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="manual_destination"
+                      [class.is-invalid]="isFieldInvalid('manual_destination')"
+                      placeholder="Ej: Recursos Humanos, Usuario X, Laboratorio, etc.">
+                    <small class="text-muted">Especifique dónde se utilizarán los productos</small>
+                    <div class="invalid-feedback">El destino es requerido</div>
+                  </div>
+
+                  <!-- Notas -->
+                  <div class="col-md-6">
+                    <label class="form-label">Notas</label>
+                    <textarea
+                      class="form-control"
+                      formControlName="notes"
+                      rows="2"
+                      placeholder="Notas adicionales (opcional)"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Artículos -->
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0"><i class="bi bi-list-check me-2"></i>Items Solicitados</h6>
+                  <button type="button" class="btn btn-light btn-sm" (click)="openManualItemModal()">
+                    <i class="bi bi-pencil-square me-1"></i>Agregar Manual
+                  </button>
+                </div>
+              </div>
+
+              <!-- Productos del Contrato (si aplica) -->
+              <div class="card-body border-bottom" *ngIf="isContractRelated && form.get('contract_id')?.value">
+                <h6 class="text-muted mb-3"><i class="bi bi-list-check me-2"></i>Productos del Contrato</h6>
+                <div *ngIf="loadingContractProducts" class="text-center py-3">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Cargando productos...
+                </div>
+                <div *ngIf="!loadingContractProducts && contractProducts.length === 0" class="text-center py-3 text-muted">
+                  <i class="bi bi-inbox me-2"></i>No hay productos en este contrato
+                </div>
+                <div class="row g-2" *ngIf="!loadingContractProducts && contractProducts.length > 0">
+                  <div class="col-md-6 col-lg-4" *ngFor="let product of contractProducts">
+                    <div class="card card-body p-2 border d-flex flex-row align-items-center justify-content-between">
+                      <div>
+                        <strong class="small">{{ product.name }}</strong>
+                        <small class="d-block text-muted" *ngIf="product.description">{{ product.description }}</small>
+                      </div>
+                      <button type="button" class="btn btn-sm btn-outline-primary" (click)="addContractProduct(product)">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Buscador de Productos -->
+              <div class="card-body border-bottom">
+                <h6 class="text-muted mb-3"><i class="bi bi-search me-2"></i>Buscar Productos</h6>
+                <div class="input-group mb-3">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Buscar producto por nombre, código..."
+                    [(ngModel)]="productSearchTerm"
+                    [ngModelOptions]="{standalone: true}"
+                    (input)="onProductSearch($any($event.target).value)">
+                </div>
+
+                <div *ngIf="loadingProductSearch" class="text-center py-3">
+                  <div class="spinner-border spinner-border-sm text-primary"></div>
+                  <span class="ms-2">Buscando...</span>
+                </div>
+
+                <div *ngIf="searchedProducts.length > 0" class="list-group">
+                  <button type="button" class="list-group-item list-group-item-action"
+                          *ngFor="let product of searchedProducts"
+                          (click)="addProductFromSearch(product)">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <strong>{{ product.name }}</strong>
+                        <small class="d-block text-muted" *ngIf="product.sku">Código: {{ product.sku }}</small>
+                        <small class="d-block text-muted" *ngIf="product.description">{{ product.description }}</small>
+                      </div>
+                      <span class="badge bg-primary">Agregar</span>
+                    </div>
+                  </button>
+                </div>
+
+                <div *ngIf="productSearchTerm && !loadingProductSearch && searchedProducts.length === 0"
+                     class="alert alert-info mb-0">
+                  <i class="bi bi-info-circle me-2"></i>
+                  No se encontraron productos. Puede agregar un producto manualmente.
+                </div>
+              </div>
+
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="ps-3">Producto</th>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="items">
+                      <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                        <td class="ps-3">
+                          <div class="d-flex align-items-start">
+                            <span class="badge bg-warning me-2" *ngIf="item.get('is_manual_item')?.value" title="Item manual">
+                              <i class="bi bi-pencil-square"></i>
+                            </span>
+                            <div class="flex-grow-1">
+                              <input type="text" class="form-control form-control-sm"
+                                     formControlName="item_name"
+                                     placeholder="Nombre del producto"
+                                     [class.is-invalid]="isItemFieldInvalid(i, 'item_name')">
+                              <input type="hidden" formControlName="item_id">
+                              <input type="hidden" formControlName="is_manual_item">
+                              <textarea class="form-control form-control-sm mt-1"
+                                        formControlName="item_description"
+                                        rows="1"
+                                        placeholder="Descripción (opcional)"></textarea>
+                            </div>
+                          </div>
+                        </td>
+                        <td style="width: 120px;">
+                          <input type="number" class="form-control form-control-sm"
+                                 formControlName="quantity"
+                                 min="1" step="1"
+                                 [class.is-invalid]="isItemFieldInvalid(i, 'quantity')">
+                        </td>
+                        <td style="width: 100px;">
+                          <input type="text" class="form-control form-control-sm"
+                                 formControlName="unit_of_measurement"
+                                 placeholder="pza">
+                        </td>
+                        <td style="width: 80px;">
+                          <button type="button" class="btn btn-sm btn-outline-danger"
+                                  (click)="removeItem(i)"
+                                  title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+
+                      <tr *ngIf="itemsArray.length === 0">
+                        <td colspan="4" class="text-center py-4">
+                          <i class="bi bi-inbox display-6 text-muted"></i>
+                          <p class="text-muted mt-2">No hay items agregados</p>
+                          <button type="button" class="btn btn-sm btn-primary" (click)="openManualItemModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Agregar Primer Item
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Lateral - Información y Acción -->
+          <div class="col-lg-4">
+            <!-- Panel de Información -->
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Información</h6>
+              </div>
+              <div class="card-body">
+                <h6>Fase 1: Solicitud Simple</h6>
+                <ul class="list-unstyled text-sm">
+                  <li><i class="bi bi-check-circle text-success me-2"></i>Agregue los productos que necesita</li>
+                  <li><i class="bi bi-check-circle text-success me-2"></i>Solo necesita especificar cantidades</li>
+                  <li><i class="bi bi-check-circle text-success me-2"></i>Los precios y proveedores se asignarán después</li>
+                </ul>
+                <hr>
+                <h6>Siguiente: Autorización de Solicitud</h6>
+                <small class="text-muted">
+                  Después de enviar, un autorizador revisará su solicitud.
+                  Una vez autorizada, se asignarán proveedores y precios en la Orden de Compra.
+                </small>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="card shadow-sm">
+              <div class="card-body d-grid gap-2">
+                <button type="button" class="btn btn-primary btn-lg"
+                        [disabled]="saving || !isFormValid()"
+                        (click)="save(false)">
+                  <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!saving" class="bi bi-floppy2 me-2"></i>
+                  Guardar Cambios
+                </button>
+                <button type="button" class="btn btn-success btn-lg"
+                        [disabled]="saving || !isFormValid() || itemsArray.length === 0"
+                        (click)="save(true)">
+                  <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!saving" class="bi bi-send me-2"></i>
+                  Guardar y Enviar para Autorización
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        (click)="cancel()" [disabled]="saving">
+                  <i class="bi bi-arrow-left me-2"></i>Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Modal Item Manual -->
+      <div class="modal fade" [class.show]="showManualItemModal" [style.display]="showManualItemModal ? 'block' : 'none'" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Agregar Producto Manual</h5>
+              <button type="button" class="btn-close" (click)="closeManualItemModal()"></button>
+            </div>
+            <div class="modal-body">
+              <form [formGroup]="manualItemForm">
+                <div class="mb-3">
+                  <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="item_name"
+                         placeholder="Ej: Toner HP LaserJet 85A">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Descripción Detallada</label>
+                  <textarea class="form-control" formControlName="item_description" rows="3"
+                            placeholder="Especificaciones, marca, modelo, etc."></textarea>
+                  <small class="text-muted">Proporcione toda la información posible para facilitar la cotización</small>
+                </div>
+
+                <div class="row">
+                  <div class="col-6">
+                    <label class="form-label">Cantidad <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" formControlName="quantity"
+                           min="1" step="1" placeholder="1">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label">Unidad de Medida</label>
+                    <input type="text" class="form-control" formControlName="unit_of_measurement"
+                           placeholder="pza, kg, lt, etc.">
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  <label class="form-label">Notas Adicionales</label>
+                  <textarea class="form-control" formControlName="notes" rows="2"
+                            placeholder="Urgencia, especificaciones técnicas, etc."></textarea>
+                </div>
+              </form>
+
+              <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Importante:</strong> Los precios se asignarán al generar la Orden de Compra.
+                Proporcione la máxima información posible para facilitar la cotización.
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeManualItemModal()">
+                Cancelar
+              </button>
+              <button type="button" class="btn btn-primary" (click)="addManualItem()"
+                      [disabled]="manualItemForm.invalid">
+                <i class="bi bi-plus-lg me-1"></i>Agregar Item
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-backdrop fade" [class.show]="showManualItemModal" *ngIf="showManualItemModal"></div>
+    </ng-container>
+  </div>
+</main>

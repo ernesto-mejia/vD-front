@@ -1,0 +1,22 @@
+<div *ngIf="product?.equipments?.length; else noEquipments">
+  <div class="table-responsive">
+    <table class="table table-sm table-striped align-middle mt-2">
+      <thead class="table-light">
+        <tr>
+          <th>Equipo</th>
+          <th># pruebas</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let eq of product.equipments">
+          <td>{{ eq.name || eq.code || eq.serial_number || "-" }}</td>
+          <td>{{ eq.tests_per_equipment ?? eq.test_count ?? "-" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<ng-template #noEquipments>
+  <p class="text-muted mb-0">No hay equipos relacionados para este producto.</p>
+</ng-template>

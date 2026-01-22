@@ -1,0 +1,41 @@
+<dl class="row mb-0">
+  <dt class="col-sm-3">Ancho</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.physical_spec?.width !== null &&
+      product?.physical_spec?.width !== undefined
+        ? (product?.physical_spec?.width + " cm")
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Alto</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.physical_spec?.height !== null &&
+      product?.physical_spec?.height !== undefined
+        ? (product?.physical_spec?.height + " cm")
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Largo</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.physical_spec?.length !== null &&
+      product?.physical_spec?.length !== undefined
+        ? (product?.physical_spec?.length + " cm")
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Peso</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.physical_spec?.weight !== null &&
+      product?.physical_spec?.weight !== undefined
+        ? (product?.physical_spec?.weight + " kg")
+        : "-"
+    }}
+  </dd>
+</dl>

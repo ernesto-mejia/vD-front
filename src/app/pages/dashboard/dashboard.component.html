@@ -1,0 +1,24 @@
+
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="kpi-grid">
+      <div class="kpi-card" *ngFor="let k of kpis">
+        <div class="kpi-icon">
+          <i *ngIf="k.icon" class="fa" [ngClass]="'fa-' + k.icon"></i>
+          <span *ngIf="!k.icon" class="icon-fallback">#</span>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-title">{{ k.title }}</div>
+          <div class="kpi-value">{{ k.value }}<span *ngIf="k.unit"> - {{ k.unit }}</span></div>
+          <div class="kpi-desc" *ngIf="k.description">{{ k.description }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

@@ -1,0 +1,122 @@
+[
+  {
+    "id": 101,
+    "module": "users",
+    "action": "create",
+    "entityId": 501,
+    "title": "Nuevo usuario creado",
+    "body": "El usuario Juan Pérez fue registrado.",
+    "severity": "info",
+    "status": "sent",
+    "active": true,
+    "createdAt": "2025-11-28T09:10:00Z"
+  },
+  {
+    "id": 102,
+    "module": "providers",
+    "action": "update",
+    "entityId": 301,
+    "title": "Proveedor actualizado",
+    "body": "Se modificaron datos del proveedor ACME Labs.",
+    "severity": "warning",
+    "status": "viewed",
+    "active": true,
+    "createdAt": "2025-11-28T09:20:00Z"
+  },
+  {
+    "id": 103,
+    "module": "customers",
+    "action": "delete",
+    "entityId": 210,
+    "title": "Cliente eliminado",
+    "body": "El cliente Farmacia Centro fue eliminado.",
+    "severity": "critical",
+    "status": "pending",
+    "active": false,
+    "createdAt": "2025-11-28T09:25:00Z"
+  },
+  {
+    "id": 104,
+    "module": "customers",
+    "action": "update",
+    "entityId": 211,
+    "title": "Cliente editado",
+    "body": "Actualizada dirección fiscal del cliente BioHealth.",
+    "severity": "info",
+    "status": "sent",
+    "active": true,
+    "createdAt": "2025-11-28T09:30:00Z"
+  },
+  {
+    "id": 105,
+    "module": "users",
+    "action": "update",
+    "entityId": 502,
+    "title": "Perfil de usuario modificado",
+    "body": "Cambió el rol de Maria López a Supervisor.",
+    "severity": "warning",
+    "status": "viewed",
+    "active": true,
+    "createdAt": "2025-11-28T09:35:00Z"
+  },
+  {
+    "id": 106,
+    "module": "providers",
+    "action": "create",
+    "entityId": 302,
+    "title": "Proveedor registrado",
+    "body": "Nuevo proveedor Meditech Global agregado.",
+    "severity": "info",
+    "status": "sent",
+    "active": true,
+    "createdAt": "2025-11-28T09:40:00Z"
+  },
+  {
+    "id": 107,
+    "module": "users",
+    "action": "delete",
+    "entityId": 503,
+    "title": "Usuario desactivado",
+    "body": "Se eliminó acceso del usuario Tester QA.",
+    "severity": "critical",
+    "status": "pending",
+    "active": false,
+    "createdAt": "2025-11-28T09:45:00Z"
+  },
+  {
+    "id": 108,
+    "module": "providers",
+    "action": "delete",
+    "entityId": 303,
+    "title": "Proveedor eliminado",
+    "body": "El proveedor Suministros Norte fue removido.",
+    "severity": "critical",
+    "status": "pending",
+    "active": false,
+    "createdAt": "2025-11-28T09:50:00Z"
+  },
+  {
+    "id": 109,
+    "module": "customers",
+    "action": "create",
+    "entityId": 212,
+    "title": "Nuevo cliente agregado",
+    "body": "Cliente Laboratorios Omega fue creado.",
+    "severity": "info",
+    "status": "sent",
+    "active": true,
+    "createdAt": "2025-11-28T09:55:00Z"
+  },
+  {
+    "id": 110,
+    "module": "customers",
+    "action": "update",
+    "entityId": 213,
+    "title": "Cliente actualizado",
+    "body": "Se agregó contacto secundario para Clinica Brisa.",
+    "severity": "warning",
+    "status": "viewed",
+    "active": true,
+    "createdAt": "2025-11-28T10:00:00Z"
+  }
+]

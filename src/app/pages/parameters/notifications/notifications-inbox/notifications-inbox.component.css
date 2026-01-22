@@ -1,0 +1,15 @@
+.list-group-item { cursor: pointer; }
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 60px);
+}
+
+.content {
+  flex: 1;
+  padding-top: 20px;
+}
+
+.container-fluid {
+  padding-top: 10px;
+}

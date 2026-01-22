@@ -1,0 +1,282 @@
+<app-sidebar></app-sidebar>
+<div class="container-fluid py-4">
+  <!-- Breadcrumb & Back -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a routerLink="/purchases/licitations">Licitaciones</a></li>
+          <li class="breadcrumb-item active" *ngIf="licitation">{{ licitation.licitation_number }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button type="button" class="btn btn-sm btn-outline-danger ms-3" (click)="goBack()">
+      Volver
+    </button>
+  </div>
+
+  <!-- Contenido -->
+  <div *ngIf="!loading && !error && licitation">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center">
+          <div class="me-3">
+            <span class="badge bg-{{ getStatusColor(licitation.status) }} fs-6">
+              {{ getStatusLabel(licitation.status) }}
+            </span>
+          </div>
+          <div>
+            <h4 class="mb-1">{{ licitation.licitation_number }}</h4>
+            <p class="text-muted mb-0">{{ licitation.company?.company }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <div class="btn-group">
+          <!-- Editar -->
+          <button *ngIf="permissions.canEdit() && licitation.status !== 'converted'"
+                  class="btn btn-outline-primary"
+                  (click)="editLicitation()">
+            <i class="fas fa-edit me-1"></i> Editar
+          </button>
+
+          <!-- Cambiar Estado -->
+          <button *ngIf="permissions.canChangeStatus() && licitation.status !== 'converted'"
+                  class="btn btn-outline-info"
+                  (click)="changeStatus()">
+            <i class="fas fa-exchange-alt me-1"></i> Estado
+          </button>
+
+          <!-- Convertir -->
+          <button *ngIf="permissions.canConvert() && canConvertToContract(licitation)"
+                  class="btn btn-success"
+                  (click)="convertToContract()">
+            <i class="fas fa-file-contract me-1"></i> Convertir a Contrato
+          </button>
+
+          <!-- Eliminar -->
+          <button *ngIf="permissions.canDelete() && licitation.status === 'draft'"
+                  class="btn btn-outline-danger"
+                  (click)="deleteLicitation()">
+            <i class="fas fa-trash-alt me-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Columna Principal -->
+      <div class="col-lg-8">
+        <!-- Descripción -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Descripción</h6>
+          </div>
+          <div class="card-body">
+            <p *ngIf="licitation.description" class="mb-0">{{ licitation.description }}</p>
+            <p *ngIf="!licitation.description" class="text-muted mb-0">Sin descripción</p>
+          </div>
+        </div>
+
+        <!-- Fechas del Proceso -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-calendar me-2"></i>Fechas del Proceso</h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="text-muted small">Fecha de Publicación</label>
+                  <p class="mb-0 fw-medium">{{ formatDate(licitation.licitation_date) }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="text-muted small">Fecha Límite Propuesta</label>
+                  <p class="mb-0 fw-medium">{{ formatDateTime(licitation.submission_deadline) }}</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="text-muted small">Fecha de Fallo</label>
+                  <p class="mb-0 fw-medium">{{ formatDate(licitation.resolution_date) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Etapas del Proceso -->
+        <div class="card mb-4" *ngIf="licitation.licitation_basis || licitation.demand_per_unit || licitation.clarification_meeting || licitation.technical_offer || licitation.economic_proposal">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Referencias en Bases</h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4" *ngIf="licitation.licitation_basis">
+                <div class="mb-3">
+                  <label class="text-muted small">Base de Licitación</label>
+                  <p class="mb-0 fw-medium">Página {{ licitation.licitation_basis }}</p>
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="licitation.demand_per_unit">
+                <div class="mb-3">
+                  <label class="text-muted small">Demanda por Unidad</label>
+                  <p class="mb-0 fw-medium">Página {{ licitation.demand_per_unit }}</p>
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="licitation.clarification_meeting">
+                <div class="mb-3">
+                  <label class="text-muted small">Junta de Aclaraciones</label>
+                  <p class="mb-0 fw-medium">Página {{ licitation.clarification_meeting }}</p>
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="licitation.technical_offer">
+                <div class="mb-3">
+                  <label class="text-muted small">Oferta Técnica</label>
+                  <p class="mb-0 fw-medium">Página {{ licitation.technical_offer }}</p>
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="licitation.economic_proposal">
+                <div class="mb-3">
+                  <label class="text-muted small">Propuesta Económica</label>
+                  <p class="mb-0 fw-medium">Página {{ licitation.economic_proposal }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contratos Vinculados -->
+        <div class="card mb-4" *ngIf="licitation.contracts && licitation.contracts.length > 0">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-file-contract me-2"></i>Contratos Generados</h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Número</th>
+                    <th>Tipo</th>
+                    <th>Vigencia</th>
+                    <th>Monto</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let contract of licitation.contracts">
+                    <td><strong>{{ contract.contract_number }}</strong></td>
+                    <td>
+                      <span class="badge bg-{{ contract.contract_type === 'client' ? 'primary' : 'secondary' }}">
+                        {{ contract.contract_type === 'client' ? 'Cliente' : 'Proveedor' }}
+                      </span>
+                    </td>
+                    <td>
+                      {{ formatDate(contract.starting_date) }} - {{ formatDate(contract.ending_date) }}
+                    </td>
+                    <td>{{ formatCurrency(contract.min_amount) }} - {{ formatCurrency(contract.max_amount) }}</td>
+                    <td>
+                      <a [routerLink]="['/purchases/contracts-clients/show', contract.id]"
+                         class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Lateral -->
+      <div class="col-lg-4">
+        <!-- Información Financiera -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Información Financiera</h6>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="text-muted small">Monto Estimado</label>
+              <p class="mb-0 fs-5 fw-bold text-primary">{{ formatCurrency(licitation.estimated_amount) }}</p>
+            </div>
+            <div *ngIf="licitation.won_amount">
+              <label class="text-muted small">Monto Adjudicado</label>
+              <p class="mb-0 fs-5 fw-bold text-success">{{ formatCurrency(licitation.won_amount) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Archivo Digital -->
+        <div class="card mb-4" *ngIf="licitation.digital_file">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-file me-2"></i>Archivo Digital</h6>
+          </div>
+          <div class="card-body">
+            <p class="mb-0">
+              <i class="fas fa-check-circle text-success me-2"></i>
+              Disponible
+            </p>
+            <small class="text-muted" *ngIf="licitation.digital_file_location">
+              {{ licitation.digital_file_location }}
+            </small>
+          </div>
+        </div>
+
+        <!-- Notas -->
+        <div class="card mb-4" *ngIf="licitation.notes">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Notas</h6>
+          </div>
+          <div class="card-body">
+            <p class="mb-0" style="white-space: pre-wrap;">{{ licitation.notes }}</p>
+          </div>
+        </div>
+
+        <!-- Metadatos -->
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-info me-2"></i>Información Adicional</h6>
+          </div>
+          <div class="card-body">
+            <div class="mb-2">
+              <label class="text-muted small">Creada</label>
+              <p class="mb-0">{{ formatDateTime(licitation.created_at) }}</p>
+            </div>
+            <div>
+              <label class="text-muted small">Última actualización</label>
+              <p class="mb-0">{{ formatDateTime(licitation.updated_at) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón Volver -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <button class="btn btn-outline-secondary" (click)="goBack()">
+          <i class="fas fa-arrow-left me-2"></i>
+          Volver al listado
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,270 @@
+<app-sidebar></app-sidebar>
+
+<div class="main-content">
+  <div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="mb-0">
+          <i class="bi bi-box-seam me-2"></i>
+          Órdenes de Recepción
+        </h2>
+        <small class="text-muted">Gestión de recepciones de mercancía</small>
+      </div>
+      <div>
+        <a routerLink="/warehouse/reception-orders/pending" class="btn btn-outline-warning">
+          <i class="bi bi-clock-history me-1"></i>
+          Ver Pendientes
+        </a>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+      <div class="col-md-2">
+        <div class="card bg-warning bg-opacity-10 border-warning">
+          <div class="card-body text-center py-3">
+            <h3 class="mb-1 text-warning">{{ summary.pending_total }}</h3>
+            <small class="text-muted">Pendientes</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card bg-info bg-opacity-10 border-info">
+          <div class="card-body text-center py-3">
+            <h3 class="mb-1 text-info">{{ summary.partial_total }}</h3>
+            <small class="text-muted">Parciales</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card bg-primary bg-opacity-10 border-primary">
+          <div class="card-body text-center py-3">
+            <h3 class="mb-1 text-primary">{{ summary.expected_today }}</h3>
+            <small class="text-muted">Esperados Hoy</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-secondary bg-opacity-10 border-secondary">
+          <div class="card-body text-center py-3">
+            <h3 class="mb-1 text-secondary">{{ summary.expected_this_week }}</h3>
+            <small class="text-muted">Esta Semana</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-success bg-opacity-10 border-success">
+          <div class="card-body text-center py-3">
+            <h3 class="mb-1 text-success">{{ summary.received_today }}</h3>
+            <small class="text-muted">Recibidos Hoy</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Buscar</label>
+            <input type="text" class="form-control"
+                   [(ngModel)]="filters.search"
+                   placeholder="No. recepción, proveedor, OC..."
+                   (keyup.enter)="applyFilters()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" [(ngModel)]="filters.status" (change)="applyFilters()">
+              <option *ngFor="let status of statuses" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Desde</label>
+            <input type="date" class="form-control"
+                   [(ngModel)]="filters.expected_from"
+                   (change)="applyFilters()">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Hasta</label>
+            <input type="date" class="form-control"
+                   [(ngModel)]="filters.expected_to"
+                   (change)="applyFilters()">
+          </div>
+          <div class="col-md-1 d-flex gap-2">
+            <button class="btn btn-outline-secondary" (click)="resetFilters()" title="Limpiar filtros">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive" *ngIf="!loading; else loadingTpl">
+          <table class="table table-hover align-middle" *ngIf="orders.length > 0; else noDataTpl">
+            <thead class="table-light">
+              <tr>
+                <th role="button" (click)="sortBy('reception_number')">
+                  No. Recepción
+                  <i class="bi" [ngClass]="{
+                    'bi-caret-up-fill': filters.sort_by === 'reception_number' && filters.sort_dir === 'asc',
+                    'bi-caret-down-fill': filters.sort_by === 'reception_number' && filters.sort_dir === 'desc'
+                  }"></i>
+                </th>
+                <th>Orden de Compra</th>
+                <th>Proveedor</th>
+                <th role="button" (click)="sortBy('expected_delivery_date')">
+                  Fecha Esperada
+                  <i class="bi" [ngClass]="{
+                    'bi-caret-up-fill': filters.sort_by === 'expected_delivery_date' && filters.sort_dir === 'asc',
+                    'bi-caret-down-fill': filters.sort_by === 'expected_delivery_date' && filters.sort_dir === 'desc'
+                  }"></i>
+                </th>
+                <th>% Recibido</th>
+                <th>Estado</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orders"
+                  [class.table-warning]="isExpectedToday(order)"
+                  [class.table-danger]="isOverdue(order)">
+                <td>
+                  <strong>{{ order.reception_number }}</strong>
+                </td>
+                <td>
+                  <a [routerLink]="['/purchases/purchase-orders/show', order.purchase_order?.id]"
+                     class="text-decoration-none">
+                    {{ order.purchase_order?.order_number }}
+                  </a>
+                  <small class="d-block text-muted" *ngIf="order.purchase_order?.title">
+                    {{ order.purchase_order.title | slice:0:40 }}{{ order.purchase_order.title.length > 40 ? '...' : '' }}
+                  </small>
+                </td>
+                <td>
+                  <span class="fw-medium">{{ order.provider?.company || order.provider?.shortname || 'Sin proveedor' }}</span>
+                  <small class="d-block text-muted" *ngIf="order.provider?.primary_contact?.contact_email">
+                    {{ order.provider.primary_contact.contact_email }}
+                  </small>
+                </td>
+                <td>
+                  <span [class.text-danger]="isOverdue(order)" [class.fw-bold]="isOverdue(order)">
+                    {{ formatDate(order.expected_delivery_date) }}
+                  </span>
+                  <small class="d-block text-muted" *ngIf="order.expected_delivery_time">
+                    {{ order.expected_delivery_time }}
+                  </small>
+                  <span *ngIf="isOverdue(order)" class="badge bg-danger ms-1">
+                    <i class="bi bi-exclamation-triangle"></i> Atrasado
+                  </span>
+                </td>
+                <td>
+                  <div class="progress" style="height: 20px; min-width: 100px;">
+                    <div class="progress-bar"
+                         [class.bg-success]="order.received_percentage === 100"
+                         [class.bg-info]="order.received_percentage && order.received_percentage > 0 && order.received_percentage < 100"
+                         [class.bg-warning]="!order.received_percentage || order.received_percentage === 0"
+                         role="progressbar"
+                         [style.width.%]="order.received_percentage || 0">
+                      {{ order.received_percentage || 0 }}%
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="'bg-' + getStatusColor(order.status)">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary"
+                            (click)="viewOrder(order)"
+                            title="Ver detalle">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-success"
+                            (click)="receiveOrder(order)"
+                            *ngIf="order.status === 'pending' || order.status === 'partial'"
+                            title="Registrar recepción">
+                      <i class="bi bi-box-arrow-in-down"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary"
+                            (click)="downloadPdf(order)"
+                            title="Descargar PDF">
+                      <i class="bi bi-file-pdf"></i>
+                    </button>
+                    <button class="btn btn-outline-danger"
+                            (click)="cancelOrder(order)"
+                            *ngIf="order.status === 'pending'"
+                            title="Cancelar">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- No data -->
+          <ng-template #noDataTpl>
+            <div class="text-center py-5">
+              <i class="bi bi-inbox display-1 text-muted"></i>
+              <h4 class="mt-3 text-muted">No hay órdenes de recepción</h4>
+              <p class="text-muted">Las órdenes se crean automáticamente al confirmar compras con proveedores</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Loading -->
+        <ng-template #loadingTpl>
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-muted">Cargando órdenes de recepción...</p>
+          </div>
+        </ng-template>
+
+        <!-- Pagination -->
+        <nav *ngIf="orders.length > 0 && lastPage > 1" class="mt-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+              Mostrando {{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, total) }} de {{ total }} registros
+            </small>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="javascript:void(0)" (click)="goToPage(1)">
+                  <i class="bi bi-chevron-double-left"></i>
+                </a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              <li class="page-item" *ngFor="let page of getPages()" [class.active]="page === currentPage">
+                <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page }}</a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === lastPage">
+                <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === lastPage">
+                <a class="page-link" href="javascript:void(0)" (click)="goToPage(lastPage)">
+                  <i class="bi bi-chevron-double-right"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

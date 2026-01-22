@@ -1,0 +1,229 @@
+<app-sidebar></app-sidebar>
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h4 class="mb-1">
+            <i class="fas fa-gavel me-2 text-primary"></i>
+            Licitaciones
+          </h4>
+          <p class="text-muted mb-0">Gestión de licitaciones y concursos</p>
+        </div>
+        <div>
+          <a *ngIf="permissions.canCreate()"
+             routerLink="/purchases/licitations/add"
+             class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Nueva Licitación
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form [formGroup]="filterForm">
+        <div class="row g-3">
+          <!-- Búsqueda -->
+          <div class="col-md-4">
+            <label class="form-label">Buscar</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text"
+                     class="form-control"
+                     placeholder="Número o descripción..."
+                     (input)="onSearchInput($event)">
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div class="col-md-2">
+            <label class="form-label">Estado</label>
+            <select formControlName="status" class="form-select">
+              <option value="">Todos</option>
+              <option *ngFor="let status of statusOptions" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Cliente -->
+          <div class="col-md-3">
+            <label class="form-label">Cliente</label>
+            <select formControlName="company_id" class="form-select">
+              <option value="">Todos</option>
+              <option *ngFor="let client of clients" [value]="client.id">
+                {{ client.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Fecha desde -->
+          <div class="col-md-2">
+            <label class="form-label">Desde</label>
+            <input type="date" formControlName="date_from" class="form-control">
+          </div>
+
+          <!-- Limpiar -->
+          <div class="col-md-1 d-flex align-items-end">
+            <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()" title="Limpiar filtros">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando licitaciones...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button type="button" class="btn btn-sm btn-outline-danger ms-3" (click)="loadLicitations()">
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading && !error" class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Monto Est.</th>
+              <th>Fecha Límite</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="licitations.length === 0">
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                No se encontraron licitaciones
+              </td>
+            </tr>
+            <tr *ngFor="let licitation of licitations">
+              <td>
+                <strong>{{ licitation.licitation_number }}</strong>
+                <br>
+                <small class="text-muted">{{ licitation.description | slice:0:50 }}{{ licitation.description && licitation.description.length > 50 ? '...' : '' }}</small>
+              </td>
+              <td>{{ licitation.company?.company || '-' }}</td>
+              <td>{{ formatDate(licitation.licitation_date) }}</td>
+              <td>{{ formatCurrency(licitation.estimated_amount) }}</td>
+              <td>
+                <span *ngIf="licitation.submission_deadline"
+                      [class.text-danger]="licitation.submission_deadline < today">
+                  {{ formatDate(licitation.submission_deadline) }}
+                </span>
+                <span *ngIf="!licitation.submission_deadline" class="text-muted">-</span>
+              </td>
+              <td>
+                <span class="badge bg-{{ getStatusColor(licitation.status) }}">
+                  {{ getStatusLabel(licitation.status) }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <!-- Ver -->
+                  <button class="btn btn-outline-primary"
+                          (click)="viewLicitation(licitation.id_licitation!)"
+                          title="Ver detalle">
+                    <i class="fas fa-eye"></i>
+                  </button>
+
+                  <!-- Editar -->
+                  <button *ngIf="permissions.canEdit() && licitation.status !== 'converted'"
+                          class="btn btn-outline-secondary"
+                          (click)="editLicitation(licitation.id_licitation!)"
+                          title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+
+                  <!-- Cambiar Estado -->
+                  <button *ngIf="permissions.canChangeStatus() && licitation.status !== 'converted'"
+                          class="btn btn-outline-info"
+                          (click)="changeStatus(licitation)"
+                          title="Cambiar estado">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+
+                  <!-- Convertir a Contrato -->
+                  <button *ngIf="permissions.canConvert() && canConvertToContract(licitation)"
+                          class="btn btn-outline-success"
+                          (click)="convertToContract(licitation)"
+                          title="Convertir a contrato">
+                    <i class="fas fa-file-contract"></i>
+                  </button>
+
+                  <!-- Eliminar -->
+                  <button *ngIf="permissions.canDelete() && licitation.status === 'draft'"
+                          class="btn btn-outline-danger"
+                          (click)="deleteLicitation(licitation)"
+                          title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="totalPages > 1" class="card-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+          Mostrando {{ (currentPage - 1) * perPage + 1 }} - {{ Math.min(currentPage * perPage, totalItems) }} de {{ totalItems }} registros
+        </small>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="goToPage(1)" [disabled]="currentPage === 1">
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+                <i class="fas fa-angle-left"></i>
+              </button>
+            </li>
+            <li *ngFor="let page of pageNumbers"
+                class="page-item"
+                [class.active]="page === currentPage">
+              <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                <i class="fas fa-angle-right"></i>
+              </button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">
+                <i class="fas fa-angle-double-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

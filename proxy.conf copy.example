@@ -1,0 +1,12 @@
+// Copia este archivo como proxy.conf.json y edita el puerto o la URL según tu backend local.
+// Ejemplo de uso:
+// cp proxy.conf.example proxy.conf.json
+// Luego edita proxy.conf.json según tu entorno.
+{
+  "/api": {
+    "target": "http://localhost:8000/",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

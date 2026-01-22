@@ -1,0 +1,89 @@
+@page {
+  margin: 20mm 15mm;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  color: #1b2631;
+  background: #ffffff;
+}
+
+.print-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 3px solid #1a5276;
+}
+
+.print-logo {
+  max-width: 140px;
+}
+
+.print-logo img {
+  width: 100%;
+  height: auto;
+}
+
+.print-title {
+  flex: 1;
+  text-align: center;
+}
+
+.print-title h1 {
+  font-size: 20px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.print-title h2 {
+  font-size: 16px;
+  margin: 6px 0 0;
+  font-weight: 500;
+  color: #1a5276;
+}
+
+.print-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #4d5656;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+thead th {
+  background: #1a5276;
+  color: #ffffff;
+  padding: 10px 12px;
+  text-transform: uppercase;
+  border: none;
+}
+
+tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #d5d8dc;
+}
+
+tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+tbody tr:hover {
+  background: #ecf0f1;
+}
+
+.print-footer {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid #d5d8dc;
+  font-size: 11px;
+  color: #626567;
+  text-align: right;
+}

@@ -1,0 +1,126 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-user-edit me-2"></i>Editar Usuario
+              </h5>
+              <small class="opacity-75" *ngIf="userForm.get('user_name')?.value">
+                {{ userForm.get("user_name")?.value }}
+              </small>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()" type="button">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button class="btn btn-warning btn-sm" (click)="onSubmit()" type="button" [disabled]="userForm.invalid">
+                <i class="fas fa-save me-1"></i>Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body" *ngIf="user">
+          <form [formGroup]="userForm">
+            <!-- Sección: Información del Usuario -->
+            <div class="epica-form-section">
+              <h6 class="epica-form-section-title">
+                <i class="fas fa-user me-2"></i>Información del Usuario
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nombre de Usuario</label>
+                  <input class="form-control" formControlName="user_name" [readonly]="true">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label"><span class="required-asterisk">*</span>Email</label>
+                  <input
+                    class="form-control"
+                    formControlName="email"
+                    placeholder="usuario@ejemplo.com"
+                    [class.is-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+                  <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="invalid-feedback">
+                    <div *ngIf="userForm.get('email')?.errors?.['required']">El email es obligatorio.</div>
+                    <div *ngIf="userForm.get('email')?.errors?.['email']">Ingrese un email válido.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección: Cambiar Contraseña -->
+            <div class="epica-form-section">
+              <h6 class="epica-form-section-title">
+                <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+                <small class="text-muted fw-normal">(dejar en blanco para no cambiar)</small>
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nueva Contraseña</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    formControlName="password"
+                    placeholder="Ingrese nueva contraseña"
+                    [class.is-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+                  <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="invalid-feedback">
+                    <div *ngIf="userForm.get('password')?.errors?.['minlength']">Mínimo 8 caracteres.</div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Confirmar Nueva Contraseña</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    formControlName="password_confirmation"
+                    placeholder="Confirme la nueva contraseña"
+                    [class.is-invalid]="userForm.get('password_confirmation')?.invalid && userForm.get('password_confirmation')?.touched">
+                  <div *ngIf="userForm.get('password_confirmation')?.invalid && userForm.get('password_confirmation')?.touched" class="invalid-feedback">
+                    <div *ngIf="userForm.get('password_confirmation')?.errors?.['required']">Debe confirmar la contraseña.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs: Roles y Permisos -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" role="tab" data-bs-toggle="tab" href="#tab-3">
+                  <i class="fas fa-user-shield me-1"></i>Roles y Permisos
+                </a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <div class="tab-pane active" role="tabpanel" id="tab-3">
+                <app-roles-permissions
+                  [formGroup]="userForm"
+                  [availableRoles]="roles"
+                  [initialPermissions]="initialPermissions"
+                  [userEffectivePermissions]="userEffectivePermissions"
+                  [userDirectPermissions]="userDirectPermissions"
+                  [canViewRoles]="canViewRoles"
+                ></app-roles-permissions>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-footer d-flex justify-content-end gap-2">
+          <button class="btn btn-secondary" (click)="goBack()">
+            <i class="fas fa-times me-1"></i>Cancelar
+          </button>
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="userForm.invalid">
+            <i class="fas fa-save me-1"></i>Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

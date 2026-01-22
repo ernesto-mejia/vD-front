@@ -1,0 +1,9 @@
+<a class="nav-link position-relative" [routerLink]="['/notifications/inbox']" title="Notificaciones">
+  <i class="fas fa-bell" [class.bell-animate]="animateBell"></i>
+  @if (count > 0) {
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+          [class.badge-animate]="animateBadge">
+      {{ count > 99 ? '99+' : count }}
+    </span>
+  }
+</a>

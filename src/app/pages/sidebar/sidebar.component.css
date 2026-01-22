@@ -1,0 +1,47 @@
+.forced-navbar .navbar {
+  min-height: 40px !important;
+}
+
+.forced-navbar .navbar-toggler {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.9rem !important;
+}
+
+.forced-navbar .container-fluid {
+  padding-right: 0.5rem !important;
+  padding-left: 0.5rem !important;
+}
+
+/* Asegurar que todo el contenido se alinee correctamente */
+.forced-navbar .navbar-collapse {
+  align-items: flex-start !important;
+}
+
+/* Forzar iconos más pequeños */
+.forced-navbar .fa {
+  font-size: 0.8rem !important;
+  margin-right: 0.3rem !important;
+}
+
+/* Estilos para menú móvil */
+@media (max-width: 991.98px) {
+  .forced-navbar .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .forced-navbar .navbar-collapse.collapse:not(.show) {
+    display: none;
+  }
+
+  .forced-navbar .navbar-collapse.show {
+    display: block !important;
+  }
+}

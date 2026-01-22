@@ -1,0 +1,54 @@
+.card {
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &.border-primary {
+    border-width: 2px;
+  }
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.modal.show {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.card.bg-light {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e9ecef;
+
+  .card-title {
+    color: #495057;
+    font-size: 0.9rem;
+  }
+}

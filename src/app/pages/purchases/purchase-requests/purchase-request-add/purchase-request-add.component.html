@@ -1,0 +1,673 @@
+<app-sidebar></app-sidebar>
+<main class="main-content">
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link text-muted p-0 me-3" [routerLink]="withPricingMode ? '/purchases/purchase-requests/pending-preauthorization' : '/purchases/purchase-requests'" title="Volver">
+            <i class="fa fa-arrow-left fs-5"></i>
+          </button>
+          <div>
+            <h4 class="mb-1">
+              <i class="fa fa-file-medical text-primary me-2"></i>
+              {{ withPricingMode ? 'Nueva Solicitud con Cotización' : 'Nueva Solicitud de Compra' }}
+            </h4>
+            <p class="text-muted mb-0" *ngIf="!withPricingMode">Fase 1: Crear lista sencilla de productos requeridos</p>
+            <p class="text-muted mb-0" *ngIf="withPricingMode">Crear solicitud con proveedor y precios (va directo a autorización final)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="form">
+      <div class="row">
+        <!-- Columna Principal -->
+        <div class="col-lg-8">
+          <!-- Datos Generales -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+              <h6 class="mb-0"><i class="fa fa-info-circle me-2"></i>Información de la Solicitud</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <!-- Toggle Contrato -->
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isContractRelated" formControlName="is_contract_related">
+                    <label class="form-check-label" for="isContractRelated">
+                      <i class="fa fa-file-alt me-1"></i>
+                      Relacionada a un contrato
+                    </label>
+                  </div>
+                  <small class="text-muted d-block mt-1">
+                    {{ isContractRelated ? 'Seleccione el tipo y contrato relacionado a esta solicitud' : 'Solicitud interna - especifique el destino y agregue productos' }}
+                  </small>
+                </div>
+
+                <!-- Tipo de Contrato (si es relacionado a contrato) -->
+                <div class="col-12" *ngIf="isContractRelated">
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="contractType" id="contractTypeProvider"
+                           [checked]="contractType === 'provider'" (change)="onContractTypeChange('provider')">
+                    <label class="btn btn-outline-primary" for="contractTypeProvider">
+                      <i class="fa fa-truck me-1"></i>Contrato de Proveedor
+                    </label>
+
+                    <input type="radio" class="btn-check" name="contractType" id="contractTypeClient"
+                           [checked]="contractType === 'client'" (change)="onContractTypeChange('client')">
+                    <label class="btn btn-outline-success" for="contractTypeClient">
+                      <i class="fa fa-handshake me-1"></i>Contrato de Cliente
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Selector de Contrato de Proveedor -->
+                <div class="col-md-6" *ngIf="isContractRelated && contractType === 'provider'">
+                  <label class="form-label">Contrato de Proveedor <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="contract_id" [class.is-invalid]="isFieldInvalid('contract_id')">
+                    <option [ngValue]="null">Seleccione un contrato...</option>
+                    <option *ngFor="let contract of contracts" [value]="contract.id">
+                      - {{ contract.name }} ({{ contract.provider?.shortname }})
+                    </option>
+                  </select>
+                  <div *ngIf="loadingContracts" class="mt-1">
+                    <small class="text-muted">
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                      Cargando contratos...
+                    </small>
+                  </div>
+                  <!-- Información del contrato seleccionado -->
+                  <div *ngIf="form.get('contract_id')?.value && contractProducts.length > 0" class="mt-2">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <small class="text-success">
+                        <i class="fa fa-check-circle me-1"></i>
+                        {{ contractProducts.length }} item(s) disponibles
+                      </small>
+                      <button type="button" class="btn btn-sm btn-outline-primary" (click)="addAllContractItems()">
+                        <i class="fa fa-plus me-1"></i>Agregar todos
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Selector de Contrato de Cliente -->
+                <div class="col-md-6" *ngIf="isContractRelated && contractType === 'client'">
+                  <label class="form-label">Contrato de Cliente <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="client_contract_id">
+                    <option [ngValue]="null">Seleccione un contrato de cliente...</option>
+                    <option *ngFor="let contract of clientContracts" [value]="contract.id">
+                      - {{ contract.name }} ({{ contract.customer?.shortname }})
+                    </option>
+                  </select>
+                  <div *ngIf="loadingClientContracts" class="mt-1">
+                    <small class="text-muted">
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                      Cargando contratos de cliente...
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Proveedores relacionados al contrato de cliente -->
+                <div class="col-md-6" *ngIf="isContractRelated && contractType === 'client' && form.get('client_contract_id')?.value">
+                  <label class="form-label">Contratos de Proveedor Relacionados</label>
+                  <div *ngIf="loadingRelatedProviders" class="text-muted">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Cargando proveedores...
+                  </div>
+                  <div *ngIf="!loadingRelatedProviders && relatedProviderContracts.length === 0" class="alert alert-warning py-2">
+                    <small><i class="fa fa-exclamation-triangle me-1"></i>No hay proveedores relacionados a este contrato</small>
+                  </div>
+                  <div *ngIf="!loadingRelatedProviders && relatedProviderContracts.length > 0">
+                    <div class="list-group list-group-flush" style="max-height: 150px; overflow-y: auto;">
+                      <a *ngFor="let pc of relatedProviderContracts"
+                         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+                         href="javascript:void(0)"
+                         (click)="loadRelatedProviderContractProducts(pc.id)">
+                        <span>
+                          <i class="fa fa-truck text-primary me-1"></i>
+                          {{ pc.provider?.shortname }} - {{ pc.name }}
+                        </span>
+                        <span class="badge bg-info">{{ pc.items_count || 0 }} items</span>
+                      </a>
+                    </div>
+                    <div class="mt-2 d-flex gap-2">
+                      <button type="button" class="btn btn-sm btn-primary"
+                              (click)="loadAllClientContractItems(form.get('client_contract_id')?.value)">
+                        <i class="fa fa-download me-1"></i>Cargar todos los items
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Items del contrato seleccionado (para ambos tipos) -->
+                <div class="col-12" *ngIf="isContractRelated && contractProducts.length > 0">
+                  <div class="alert alert-info py-2 d-flex justify-content-between align-items-center">
+                    <span>
+                      <i class="fa fa-info-circle me-1"></i>
+                      <strong>{{ contractProducts.length }}</strong> item(s) disponibles del contrato
+                    </span>
+                    <div>
+                      <button type="button" class="btn btn-sm btn-outline-primary me-2" (click)="openContractProductsModal()">
+                        <i class="fa fa-list me-1"></i>Seleccionar
+                      </button>
+                      <button type="button" class="btn btn-sm btn-primary" (click)="addAllContractItems()">
+                        <i class="fa fa-plus me-1"></i>Agregar todos
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Prioridad -->
+                <div class="col-md-3">
+                  <label class="form-label">Prioridad <span class="text-danger">*</span></label>
+                  <select
+                    class="form-select"
+                    formControlName="priority"
+                    [class.is-invalid]="isFieldInvalid('priority')">
+                    <option *ngFor="let p of priorities" [value]="p.value">{{ p.label }}</option>
+                  </select>
+                </div>
+
+                <!-- Fecha Requerida -->
+                <div class="col-md-3">
+                  <label class="form-label">Fecha Requerida <span class="text-danger">*</span></label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    formControlName="required_date"
+                    [min]="minDate"
+                    [class.is-invalid]="isFieldInvalid('required_date')">
+                  <div class="invalid-feedback">La fecha es requerida</div>
+                </div>
+
+                <!-- Título -->
+                <div class="col-12">
+                  <label class="form-label">Título de la Solicitud <span class="text-danger">*</span></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="title"
+                    placeholder="Ej: Solicitud de material de oficina"
+                    [class.is-invalid]="isFieldInvalid('title')">
+                  <div class="invalid-feedback">El título es requerido</div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="col-12">
+                  <label class="form-label">Descripción</label>
+                  <textarea
+                    class="form-control"
+                    formControlName="description"
+                    rows="2"
+                    placeholder="Describa brevemente la solicitud..."></textarea>
+                </div>
+
+                <!-- Destino Manual (si no es contrato) -->
+                <div class="col-12" *ngIf="!isContractRelated">
+                  <label class="form-label">
+                    Destino <span class="text-danger">*</span>
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm p-0 ms-2"
+                      (click)="toggleManualDestination()">
+                      <i class="fa" [ngClass]="useManualDestination ? 'fa-list' : 'fa-edit'"></i>
+                      {{ useManualDestination ? 'Seleccionar área' : 'Ingresar manualmente' }}
+                    </button>
+                  </label>
+
+                  <!-- Selector de Área/Departamento -->
+                  <div *ngIf="!useManualDestination" class="row g-2">
+                    <div class="col-md-6">
+                      <select
+                        class="form-select"
+                        formControlName="destination_area_id"
+                        [class.is-invalid]="isFieldInvalid('destination_area_id')">
+                        <option [ngValue]="null">Seleccione un área...</option>
+                        <option *ngFor="let area of destinationAreas" [value]="area.id">
+                          {{ area.name }}
+                          <span *ngIf="area.code"> ({{ area.code }})</span>
+                        </option>
+                      </select>
+                      <div class="invalid-feedback">El área es requerida</div>
+                    </div>
+                    <div class="col-md-6">
+                      <select
+                        class="form-select"
+                        formControlName="destination_department_id"
+                        [disabled]="availableDepartments.length === 0">
+                        <option [ngValue]="null">{{ availableDepartments.length ? 'Seleccione departamento (opcional)' : 'Primero seleccione un área' }}</option>
+                        <option *ngFor="let dept of availableDepartments" [value]="dept.id">
+                          {{ dept.name }}
+                          <span *ngIf="dept.budget_center"> - {{ dept.budget_center }}</span>
+                        </option>
+                      </select>
+                    </div>
+                    <small class="text-muted col-12">Seleccione el área y opcionalmente el departamento de destino</small>
+                  </div>
+
+                  <!-- Input Manual (alternativa) -->
+                  <div *ngIf="useManualDestination">
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="manual_destination"
+                      [class.is-invalid]="isFieldInvalid('manual_destination')"
+                      placeholder="Ej: Recursos Humanos, Usuario X, Laboratorio, etc.">
+                    <small class="text-muted">Especifique dónde se utilizarán los productos</small>
+                    <div class="invalid-feedback">El destino es requerido</div>
+                  </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="col-md-6">
+                  <label class="form-label">Notas</label>
+                  <textarea
+                    class="form-control"
+                    formControlName="notes"
+                    rows="2"
+                    placeholder="Notas adicionales (opcional)"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Artículos -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fa fa-tasks me-2"></i>Items Solicitados</h6>
+                <button type="button" class="btn btn-light btn-sm" (click)="openManualItemModal()">
+                  <i class="fa fa-edit me-1"></i>Agregar Manual
+                </button>
+              </div>
+            </div>
+
+            <!-- Productos del Contrato (si aplica) -->
+            <div class="card-body border-bottom" *ngIf="isContractRelated && form.get('contract_id')?.value">
+              <h6 class="text-muted mb-3"><i class="fa fa-tasks me-2"></i>Productos del Contrato</h6>
+              <div *ngIf="loadingContractProducts" class="text-center py-3">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Cargando productos...
+              </div>
+              <div *ngIf="!loadingContractProducts && contractProducts.length === 0" class="text-center py-3 text-muted">
+                <i class="fa fa-inbox me-2"></i>No hay productos en este contrato
+              </div>
+
+              <!-- Botones para agregar productos cuando hay muchos -->
+              <div *ngIf="!loadingContractProducts && contractProducts.length > 0" class="d-flex gap-2 flex-wrap align-items-center">
+                <span class="badge bg-info fs-6">
+                  <i class="fa fa-box me-1"></i>{{ contractProducts.length }} producto(s) disponibles
+                </span>
+                <button type="button" class="btn btn-primary" (click)="openContractProductsModal()">
+                  <i class="fa fa-search me-1"></i>Seleccionar Productos
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="addAllContractItems()">
+                  <i class="fa fa-plus-circle me-1"></i>Agregar Todos
+                </button>
+              </div>
+            </div>
+
+            <!-- Buscador de Productos -->
+            <div class="card-body border-bottom" *ngIf="!isContractRelated || contractProducts.length > 0">
+              <h6 class="text-muted mb-3"><i class="fa fa-search me-2"></i>Buscar Productos</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Buscar producto por nombre, código..."
+                  [(ngModel)]="productSearchTerm"
+                  [ngModelOptions]="{standalone: true}"
+                  (input)="onProductSearch($any($event.target).value)">
+              </div>
+
+              <div *ngIf="loadingProductSearch" class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+                <span class="ms-2">Buscando...</span>
+              </div>
+
+              <div *ngIf="searchedProducts.length > 0" class="list-group">
+                <button type="button" class="list-group-item list-group-item-action"
+                        *ngFor="let product of searchedProducts"
+                        (click)="addProductFromSearch(product)">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{{ product.name }}</strong>
+                      <small class="d-block text-muted" *ngIf="product.sku">Código: {{ product.sku }}</small>
+                      <small class="d-block text-muted" *ngIf="product.description">{{ product.description }}</small>
+                    </div>
+                    <span class="badge bg-primary">Agregar</span>
+                  </div>
+                </button>
+              </div>
+
+              <div *ngIf="productSearchTerm && !loadingProductSearch && searchedProducts.length === 0"
+                   class="alert alert-info mb-0">
+                <i class="fa fa-info-circle me-2"></i>
+                No se encontraron productos. Puede agregar un producto manualmente.
+              </div>
+            </div>
+
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="ps-3">Producto</th>
+                      <th>Cantidad</th>
+                      <th>Unidad</th>
+                      <th *ngIf="withPricingMode">Proveedor</th>
+                      <th *ngIf="withPricingMode">Precio Unit.</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="items">
+                    <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                      <td class="ps-3">
+                        <div class="d-flex align-items-start">
+                          <div class="me-2 d-flex flex-column gap-1">
+                            <span class="badge bg-warning" *ngIf="item.get('is_manual_item')?.value" title="Item manual">
+                              <i class="fa fa-edit"></i>
+                            </span>
+                            <span class="badge bg-primary" *ngIf="item.get('provider_name')?.value"
+                                  [title]="'Proveedor: ' + item.get('provider_name')?.value">
+                              <i class="fa fa-truck me-1"></i>{{ item.get('provider_name')?.value }}
+                            </span>
+                          </div>
+                          <div class="flex-grow-1">
+                            <input type="text" class="form-control form-control-sm"
+                                   formControlName="item_name"
+                                   placeholder="Nombre del producto"
+                                   [class.is-invalid]="isItemFieldInvalid(i, 'item_name')">
+                            <input type="hidden" formControlName="item_id">
+                            <input type="hidden" formControlName="is_manual_item">
+                            <input type="hidden" formControlName="provider_name">
+                            <textarea class="form-control form-control-sm mt-1"
+                                      formControlName="item_description"
+                                      rows="1"
+                                      placeholder="Descripción (opcional)"></textarea>
+                          </div>
+                        </div>
+                      </td>
+                      <td style="width: 120px;">
+                        <input type="number" class="form-control form-control-sm"
+                               formControlName="quantity"
+                               min="1" step="1"
+                               [class.is-invalid]="isItemFieldInvalid(i, 'quantity')">
+                      </td>
+                      <td style="width: 100px;">
+                        <input type="text" class="form-control form-control-sm"
+                               formControlName="unit_of_measurement"
+                               placeholder="pza">
+                      </td>
+                      <!-- Proveedor (solo en modo withPricing) -->
+                      <td *ngIf="withPricingMode" style="width: 180px;">
+                        <select class="form-select form-select-sm" formControlName="provider_id" title="Seleccionar proveedor">
+                          <option [ngValue]="null">Seleccionar...</option>
+                          <option *ngFor="let prov of providers" [value]="prov.id">{{ prov.shortname || prov.company }}</option>
+                        </select>
+                      </td>
+                      <!-- Precio Unitario (solo en modo withPricing) -->
+                      <td *ngIf="withPricingMode" style="width: 120px;">
+                        <input type="number" class="form-control form-control-sm"
+                               formControlName="unit_price"
+                               min="0" step="0.01"
+                               placeholder="0.00"
+                               title="Precio unitario">
+                      </td>
+                      <td style="width: 80px;">
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                (click)="removeItem(i)"
+                                title="Eliminar">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+
+                    <tr *ngIf="itemsArray.length === 0">
+                      <td [attr.colspan]="withPricingMode ? 6 : 4" class="text-center py-4">
+                        <i class="fa fa-inbox display-6 text-muted"></i>
+                        <p class="text-muted mt-2">No hay items agregados</p>
+                        <button type="button" class="btn btn-sm btn-primary" (click)="openManualItemModal()">
+                          <i class="fa fa-plus me-1"></i>Agregar Primer Item
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Lateral - Información y Acción -->
+        <div class="col-lg-4">
+          <!-- Panel de Información -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+              <h6 class="mb-0"><i class="fa fa-lightbulb me-2"></i>Información</h6>
+            </div>
+            <div class="card-body">
+              <div *ngIf="!withPricingMode">
+                <h6>Fase 1: Solicitud Simple</h6>
+                <ul class="list-unstyled text-sm">
+                  <li><i class="fa fa-check-circle text-success me-2"></i>Agregue los productos que necesita</li>
+                  <li><i class="fa fa-check-circle text-success me-2"></i>Solo necesita especificar cantidades</li>
+                  <li><i class="fa fa-check-circle text-success me-2"></i>Los precios y proveedores se asignarán después</li>
+                </ul>
+                <hr>
+                <h6>Siguiente: Autorización de Solicitud</h6>
+                <small class="text-muted">
+                  Después de enviar, un autorizador revisará su solicitud.
+                  Una vez autorizada, se asignarán proveedores y precios en la Orden de Compra.
+                </small>
+              </div>
+              <div *ngIf="withPricingMode">
+                <h6>Solicitud con Cotización</h6>
+                <ul class="list-unstyled text-sm">
+                  <li><i class="fa fa-check-circle text-success me-2"></i>Agregue los productos y cantidades</li>
+                  <li><i class="fa fa-check-circle text-success me-2"></i>Seleccione el proveedor para cada item</li>
+                  <li><i class="fa fa-check-circle text-success me-2"></i>Ingrese el precio unitario cotizado</li>
+                </ul>
+                <hr>
+                <h6>Siguiente: Autorización Final</h6>
+                <small class="text-muted">
+                  Esta solicitud va directo a autorización final para aprobación de compra
+                  sin pasar por el flujo estándar.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="card shadow-sm">
+            <div class="card-body d-grid gap-2">
+              <button type="button" class="btn btn-primary btn-lg"
+                      [disabled]="loading || form.invalid"
+                      (click)="save(false)">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!loading" class="fa fa-save me-2"></i>
+                Guardar Borrador
+              </button>
+              <button type="button" class="btn btn-success btn-lg" *ngIf="!withPricingMode"
+                      [disabled]="loading || form.invalid || itemsArray.length === 0"
+                      (click)="save(true)">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!loading" class="fa fa-paper-plane me-2"></i>
+                Enviar para Autorización
+              </button>
+              <button type="button" class="btn btn-success btn-lg" *ngIf="withPricingMode"
+                      [disabled]="loading || form.invalid || itemsArray.length === 0"
+                      (click)="saveWithPricing()">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!loading" class="fa fa-paper-plane me-2"></i>
+                Enviar para Autorización Final
+              </button>
+              <button type="button" class="btn btn-outline-secondary"
+                      (click)="cancel()" [disabled]="loading">
+                <i class="fa fa-arrow-left me-2"></i>Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Modal Item Manual -->
+    <div class="modal fade" [class.show]="showManualItemModal" [style.display]="showManualItemModal ? 'block' : 'none'" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fa fa-edit me-2"></i>Agregar Producto Manual</h5>
+            <button type="button" class="btn-close" (click)="closeManualItemModal()"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="manualItemForm">
+              <div class="mb-3">
+                <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="item_name"
+                       placeholder="Ej: Toner HP LaserJet 85A">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Descripción Detallada</label>
+                <textarea class="form-control" formControlName="item_description" rows="3"
+                          placeholder="Especificaciones, marca, modelo, etc."></textarea>
+                <small class="text-muted">Proporcione toda la información posible para facilitar la cotización</small>
+              </div>
+
+              <div class="row">
+                <div class="col-6">
+                  <label class="form-label">Cantidad <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="quantity"
+                         min="1" step="1" placeholder="1">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Unidad de Medida</label>
+                  <input type="text" class="form-control" formControlName="unit_of_measurement"
+                         placeholder="pza, kg, lt, etc.">
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label class="form-label">Notas Adicionales</label>
+                <textarea class="form-control" formControlName="notes" rows="2"
+                          placeholder="Urgencia, especificaciones técnicas, etc."></textarea>
+              </div>
+            </form>
+
+            <div class="alert alert-info mt-3">
+              <i class="fa fa-info-circle me-2"></i>
+              <strong>Importante:</strong> Los precios se asignarán al generar la Orden de Compra.
+              Proporcione la máxima información posible para facilitar la cotización.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeManualItemModal()">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" (click)="addManualItem()"
+                    [disabled]="manualItemForm.invalid">
+              <i class="fa fa-plus me-1"></i>Agregar Item
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade" [class.show]="showManualItemModal" *ngIf="showManualItemModal"></div>
+  </div>
+
+  <!-- Modal de Selección de Productos del Contrato -->
+  <div *ngIf="showContractProductsModal">
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+              <i class="fa fa-box-open me-2"></i>
+              Seleccionar Productos del Contrato
+            </h5>
+            <button type="button" class="btn-close btn-close-white" (click)="closeContractProductsModal()"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Búsqueda y selector -->
+            <div class="mb-3">
+              <label class="form-label">Buscar y seleccionar productos</label>
+              <ng-select
+                [items]="filteredContractProducts"
+                [multiple]="true"
+                [searchable]="true"
+                [clearable]="true"
+                [(ngModel)]="selectedContractProducts"
+                bindLabel="name"
+                placeholder="Escriba para buscar productos..."
+                notFoundText="No se encontraron productos"
+                loadingText="Buscando..."
+                [closeOnSelect]="false">
+                <ng-template ng-label-tmp let-item="item">
+                  <span class="badge bg-primary me-1">{{ item.name }}</span>
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{{ item.name }}</strong>
+                      <small class="d-block text-muted" *ngIf="item.description">{{ item.description }}</small>
+                      <small class="text-info" *ngIf="item.sku">SKU: {{ item.sku }}</small>
+                    </div>
+                    <span class="badge bg-secondary" *ngIf="item.unit_of_measurement">{{ item.unit_of_measurement }}</span>
+                  </div>
+                </ng-template>
+              </ng-select>
+            </div>
+
+            <!-- Resumen de selección -->
+            <div class="alert alert-info" *ngIf="selectedContractProducts.length > 0">
+              <i class="fa fa-check-circle me-1"></i>
+              {{ selectedContractProducts.length }} producto(s) seleccionado(s)
+            </div>
+
+            <!-- Filtro rápido adicional -->
+            <div class="mb-3">
+              <label class="form-label small text-muted">Filtro rápido</label>
+              <input type="text" class="form-control form-control-sm"
+                     [(ngModel)]="contractProductSearchTerm"
+                     placeholder="Filtrar lista de productos...">
+            </div>
+
+            <!-- Lista de productos con checkbox -->
+            <div class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
+              <div class="form-check mb-2" *ngFor="let product of filteredContractProducts">
+                <input class="form-check-input" type="checkbox"
+                       [id]="'cp_' + product.id"
+                       [checked]="selectedContractProducts.includes(product)"
+                       (change)="toggleContractProduct(product, $event)">
+                <label class="form-check-label" [for]="'cp_' + product.id">
+                  <strong>{{ product.name }}</strong>
+                  <small class="text-muted ms-2" *ngIf="product.description">{{ product.description }}</small>
+                </label>
+              </div>
+              <div *ngIf="filteredContractProducts.length === 0" class="text-center text-muted py-3">
+                No se encontraron productos con ese filtro
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <span class="me-auto text-muted small">
+              {{ contractProducts.length }} productos disponibles
+            </span>
+            <button type="button" class="btn btn-secondary" (click)="closeContractProductsModal()">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-primary"
+                    (click)="addSelectedContractProducts()"
+                    [disabled]="selectedContractProducts.length === 0">
+              <i class="fa fa-plus-circle me-1"></i>
+              Agregar {{ selectedContractProducts.length }} Producto(s)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

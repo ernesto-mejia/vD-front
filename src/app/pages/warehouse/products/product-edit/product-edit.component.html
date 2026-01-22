@@ -1,0 +1,1131 @@
+<div>
+  <!-- Sidebar -->
+  <div class="pb-3">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="p-5 p-sm-5" lang="es">
+    <div class="container">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                Editar Producto - {{ product.name || "-" }} (SKU:
+                {{ product.sku || "-" }})
+              </h5>
+            </div>
+            <div class="btn-group" role="group">
+              <button
+                class="btn btn-secondary me-2 btn-outline-light"
+                (click)="confirmCancelEdit()"
+                title="Cerrar edición"
+              >
+                <i class="fas fa-times me-1"></i>Cerrar edición
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card border-secondary">
+            <div class="card-header bg-light text-dark">
+              <h6 class="mb-0">Información del Producto</h6>
+              <small class="text-muted">
+                Actualice los datos del producto y sus clasificaciones
+              </small>
+            </div>
+            <div class="card-body">
+              <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="tab-general"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-general"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-database me-1"></i>Datos Generales
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="tab-providers"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-providers"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-truck me-1"></i>Proveedores
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="tab-dimensions"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-dimensions"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-ruler-combined me-1"></i>Dimensiones y peso
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="tab-equipments"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-equipments"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-toolbox me-1"></i>Equipos
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="tab-remplazos"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-remplazos"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-exchange-alt me-1"></i>Reemplazos
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="tab-equivalencias"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-equivalencias"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-random me-1"></i>Equivalencias
+                  </button>
+                </li>
+                <li
+                  class="nav-item"
+                  role="presentation"
+                  *ngIf="product.configuration?.relates_to_other_products"
+                >
+                  <button
+                    class="nav-link"
+                    id="tab-related-products"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-related-products"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-link me-1"></i>Productos relacionados
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    id="tab-config"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-config"
+                    type="button"
+                    role="tab"
+                  >
+                    <i class="fas fa-sliders-h me-1"></i>Configuración
+                  </button>
+                </li>
+              </ul>
+
+              <div class="tab-content mt-3">
+                <div
+                  class="tab-pane fade show active"
+                  id="pane-general"
+                  role="tabpanel"
+                >
+                  <div class="row g-3">
+                    <div class="col-12 col-md-12">
+                      <label class="required-field">Nombre del producto:</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        title="Ingrese el nombre del producto"
+                        [class.is-invalid]="!product.name && formSubmitted"
+                        [(ngModel)]="product.name"
+                        name="name"
+                        required
+                      />
+                      <div
+                        class="invalid-feedback"
+                        *ngIf="!product.name && formSubmitted"
+                      >
+                        El nombre del producto es requerido
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 mt-3">
+                      <label>SKU</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        [(ngModel)]="product.sku"
+                        name="sku"
+                        disabled
+                      />
+                    </div>
+
+                    <div class="col-12 col-md-4 mt-3">
+                      <label>Estatus del producto</label>
+                      <select
+                        class="form-control"
+                        [(ngModel)]="product.item_status_id"
+                        name="item_status_id"
+                      >
+                        <option value="">Seleccione un estatus</option>
+                        <option
+                          *ngFor="let s of inventoryStatuses"
+                          [value]="s.id"
+                        >
+                          {{ s.name }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="col-12 col-md-4 mt-3">
+                      <label class="required-field">Tipo de producto</label>
+                      <select
+                        class="form-control"
+                        [(ngModel)]="product.product_type_id"
+                        name="product_type_id"
+                        [class.is-invalid]="!product.product_type_id && formSubmitted"
+                        required
+                      >
+                        <option value="">Seleccione un tipo</option>
+                        <option
+                          *ngFor="let type of productTypes"
+                          [value]="type.id"
+                        >
+                          {{ type.name }}
+                        </option>
+                      </select>
+                      <div
+                        class="invalid-feedback"
+                        *ngIf="!product.product_type_id && formSubmitted"
+                      >
+                        El tipo de producto es requerido
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 mt-3">
+                      <label>Presentación</label>
+                      <input
+                        class="form-control"
+                        list="presentation-options"
+                        [(ngModel)]="presentationInput"
+                        name="presentation"
+                        (input)="searchPresentations(); syncPresentationOption()"
+                        (blur)="syncPresentationOption()"
+                      />
+                      <datalist id="presentation-options">
+                        <option
+                          *ngFor="let option of getFilteredPresentationOptions()"
+                          [value]="option.label"
+                        ></option>
+                      </datalist>
+                      <div
+                        *ngIf="
+                          presentationInput.trim().length > 0 &&
+                          getFilteredPresentationOptions().length > 0
+                        "
+                        class="mt-2"
+                      >
+                        <div class="list-group">
+                          <button
+                            type="button"
+                            class="list-group-item list-group-item-action"
+                            *ngFor="
+                              let option of getFilteredPresentationOptions()
+                            "
+                            (click)="selectPresentationOption(option)"
+                          >
+                            {{ option.label }}
+                          </button>
+                        </div>
+                      </div>
+                      <small class="form-text text-muted">
+                        <span *ngIf="presentationInput.trim().length === 0">
+                          Escribe para buscar presentaciones.
+                        </span>
+                        <span *ngIf="presentationInput.trim().length > 0">
+                          Coincidencias:
+                          {{ getFilteredPresentationOptions().length }}
+                        </span>
+                      </small>
+                      <div
+                        *ngIf="
+                          presentationInput.trim().length > 0 &&
+                          getFilteredPresentationOptions().length === 0
+                        "
+                        class="mt-2"
+                      >
+                        <small class="text-muted">No hay coincidencias.</small>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-primary ms-2"
+                          (click)="addPresentationOption()"
+                        >
+                          Agregar "{{ presentationInput.trim() }}"
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="col-12 mt-3">
+                      <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                          <label>Unidad de medida (inventario)</label>
+                          <select
+                            class="form-control"
+                            [(ngModel)]="product.inventory_unit_of_measurement_id"
+                            name="inventory_unit_of_measurement_id"
+                          >
+                            <option value="">Seleccione una unidad</option>
+                            <option
+                              *ngFor="let u of unitsOfMeasurement"
+                              [value]="u.id"
+                            >
+                              {{ u.name }}
+                            </option>
+                          </select>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                          <label>Unidad de medida (compra)</label>
+                          <select
+                            class="form-control"
+                            [(ngModel)]="product.purchase_unit_of_measurement_id"
+                            name="purchase_unit_of_measurement_id"
+                          >
+                            <option value="">Seleccione una unidad</option>
+                            <option
+                              *ngFor="let u of unitsOfMeasurement"
+                              [value]="u.id"
+                            >
+                              {{ u.name }}
+                            </option>
+                          </select>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                          <label>Equivalencia entre unidades</label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [(ngModel)]="product.unit_equivalence"
+                            name="unit_equivalence"
+                            min="0"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 mt-3">
+                      <label>Condición de almacenaje</label>
+                      <select
+                        class="form-control"
+                        [(ngModel)]="product.storage_condition_id"
+                        name="storage_condition_id"
+                      >
+                        <option value="">Seleccione una condición</option>
+                        <option
+                          *ngFor="let sc of storageConditions"
+                          [value]="sc.id"
+                        >
+                          {{
+                            sc.name?.toLowerCase() === "cadena fria"
+                              ? "Congelado"
+                              : sc.name
+                          }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end mt-3">
+                      <button
+                        type="button"
+                        class="btn btn-success"
+                        (click)="saveGeneral()"
+                      >
+                        <i class="far fa-save me-1"></i>Guardar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="pane-dimensions" role="tabpanel">
+                  <div class="d-flex justify-content-end mb-3">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-primary"
+                      (click)="saveDimensions()"
+                    >
+                      Actualizar dimensiones
+                    </button>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-12 col-md-3">
+                      <label>Ancho</label>
+                      <div class="input-group">
+                        <input
+                          type="number"
+                          class="form-control"
+                          [(ngModel)]="product.physical_spec.width"
+                          name="width"
+                          min="0"
+                        />
+                        <span class="input-group-text">cm</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                      <label>Alto</label>
+                      <div class="input-group">
+                        <input
+                          type="number"
+                          class="form-control"
+                          [(ngModel)]="product.physical_spec.height"
+                          name="height"
+                          min="0"
+                        />
+                        <span class="input-group-text">cm</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                      <label>Largo</label>
+                      <div class="input-group">
+                        <input
+                          type="number"
+                          class="form-control"
+                          [(ngModel)]="product.physical_spec.length"
+                          name="length"
+                          min="0"
+                        />
+                        <span class="input-group-text">cm</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                      <label>Peso</label>
+                      <div class="input-group">
+                        <input
+                          type="number"
+                          class="form-control"
+                          [(ngModel)]="product.physical_spec.weight"
+                          name="weight"
+                          min="0"
+                          step="0.01"
+                        />
+                        <span class="input-group-text">kg</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="pane-providers" role="tabpanel">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <p class="text-muted mb-0">
+                      Proveedores autorizados o relacionados al producto.
+                    </p>
+                    <div class="d-flex gap-2">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary d-flex align-items-center"
+                        (click)="saveProviders()"
+                      >
+                        <i class="fa fa-save me-1"></i> Actualizar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary d-flex align-items-center"
+                        (click)="addProvider()"
+                      >
+                        <i class="fa fa-plus me-1"></i> Agregar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Proveedor</th>
+                          <th># Catálogo</th>
+                          <th>REF</th>
+                          <th>Principal</th>
+                          <th>Activo</th>
+                          <th>Notas</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let provider of providers; let i = index">
+                          <td style="min-width: 220px">
+                            <select
+                              class="form-control"
+                              [(ngModel)]="provider.provider_id"
+                              [name]="'edit_provider_id_' + i"
+                              (change)="onProviderChange(i)"
+                            >
+                              <option value="">Seleccione un proveedor</option>
+                              <option
+                                *ngFor="let p of providersCatalog"
+                                [value]="p.id"
+                              >
+                                {{ p.name || p.shortname || p.company }}
+                              </option>
+                            </select>
+                          </td>
+                          <td>
+                            <input
+                              class="form-control"
+                              [(ngModel)]="provider.provider_code"
+                              [name]="'edit_provider_code_' + i"
+                              type="text"
+                              (input)="onProviderCodeChange(i)"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              class="form-control"
+                              [(ngModel)]="provider.ref"
+                              [name]="'edit_provider_ref_' + i"
+                              type="text"
+                            />
+                          </td>
+                          <td class="text-center">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              [name]="'edit_provider_primary_group'"
+                              [checked]="provider.is_primary"
+                              (change)="setPrimaryProvider(i)"
+                            />
+                          </td>
+                          <td class="text-center">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              [(ngModel)]="provider.is_active"
+                              [name]="'edit_provider_active_' + i"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              class="form-control"
+                              [(ngModel)]="provider.meta.notes"
+                              [name]="'edit_provider_notes_' + i"
+                              type="text"
+                            />
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-transparent"
+                              title="Eliminar"
+                              (click)="removeProvider(i)"
+                            >
+                              <i class="fa fa-trash-alt"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="providers.length === 0">
+                          <td colspan="8" class="text-center text-muted py-4">
+                            <i class="fas fa-truck fa-2x mb-2"></i><br />
+                            No hay proveedores registrados
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="pane-equipments" role="tabpanel">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <p class="text-muted mb-0">
+                      Equipos relacionados al producto.
+                    </p>
+                    <div class="d-flex gap-2">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary d-flex align-items-center"
+                        (click)="saveEquipments()"
+                      >
+                        <i class="fa fa-save me-1"></i> Actualizar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary d-flex align-items-center"
+                        (click)="addEquipment()"
+                      >
+                        <i class="fa fa-plus me-1"></i> Agregar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Equipo</th>
+                          <th># pruebas</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let equipment of equipments; let i = index">
+                          <td style="min-width: 240px">
+                            <select
+                              class="form-control"
+                              [(ngModel)]="equipment.equipment_id"
+                              [name]="'equipment_id_' + i"
+                            >
+                              <option value="">Seleccione un equipo</option>
+                              <option
+                                *ngFor="let eq of equipmentsCatalog"
+                                [value]="eq.id"
+                              >
+                                {{ eq.equipment }}
+                              </option>
+                            </select>
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              class="form-control"
+                              [(ngModel)]="equipment.tests_per_equipment"
+                              [name]="'equipment_tests_per_equipment_' + i"
+                              min="0"
+                            />
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-transparent"
+                              title="Eliminar"
+                              (click)="removeEquipment(i)"
+                            >
+                              <i class="fa fa-trash-alt"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="equipments.length === 0">
+                          <td colspan="3" class="text-center text-muted py-4">
+                            <i class="fas fa-toolbox fa-2x mb-2"></i><br />
+                            No hay equipos registrados
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="pane-remplazos" role="tabpanel">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <div>
+                      <p class="text-muted mb-0">
+                        Productos de remplazo relacionados al producto.
+                      </p>
+                      <small class="text-muted">
+                        Proveedor por defecto: {{ getDefaultProviderLabel() }}
+                      </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary d-flex align-items-center"
+                        (click)="saveRemplazos()"
+                      >
+                        <i class="fa fa-save me-1"></i> Actualizar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary d-flex align-items-center"
+                        (click)="addRemplazo()"
+                      >
+                        <i class="fa fa-plus me-1"></i> Agregar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th># Catálogo</th>
+                          <th>Proveedor</th>
+                          <th>Observaciones</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let rem of remplazos; let i = index">
+                          <td style="min-width: 260px">
+                            <input
+                              class="form-control"
+                              [attr.list]="'remplazo-options-' + i"
+                              [(ngModel)]="rem.search"
+                              [name]="'remplazo_search_' + i"
+                              (input)="
+                                rem.replacement_item_id = null;
+                                searchRemplazoItems(i)
+                              "
+                              (blur)="resolveRemplazoSelection(i)"
+                              [disabled]="!rem.provider_id"
+                            />
+                            <datalist [id]="'remplazo-options-' + i">
+                              <option
+                                *ngFor="
+                                  let option of getFilteredRemplazoOptions(i)
+                                "
+                                [value]="option.name"
+                              ></option>
+                            </datalist>
+                            <small
+                              class="text-muted"
+                              *ngIf="!rem.provider_id"
+                            >
+                              Selecciona un proveedor para buscar productos.
+                            </small>
+                            <div
+                              *ngIf="
+                                rem.replacement_item_id === null &&
+                                rem.search.trim().length > 0 &&
+                                getFilteredRemplazoOptions(i).length > 0
+                              "
+                              class="mt-2"
+                            >
+                              <div class="list-group">
+                                <button
+                                  type="button"
+                                  class="list-group-item list-group-item-action"
+                                  *ngFor="
+                                    let option of getFilteredRemplazoOptions(i)
+                                  "
+                                  (click)="selectRemplazoItem(i, option)"
+                                >
+                                  {{ option.name }}
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{{ rem.provider_code || "-" }}</td>
+                          <td style="min-width: 220px">
+                            <select
+                              class="form-control"
+                              [(ngModel)]="rem.provider_id"
+                              [name]="'remplazo_provider_' + i"
+                              (change)="onRemplazoProviderChange(i)"
+                            >
+                              <option value="">Seleccione un proveedor</option>
+                              <option
+                                *ngFor="let p of providers"
+                                [value]="p.provider_id"
+                              >
+                                {{ getProviderDisplayName(p) }}
+                              </option>
+                            </select>
+                          </td>
+                          <td>
+                            <input
+                              class="form-control"
+                              [(ngModel)]="rem.observations"
+                              [name]="'remplazo_observations_' + i"
+                              type="text"
+                            />
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-transparent"
+                              title="Eliminar"
+                              (click)="removeRemplazo(i)"
+                            >
+                              <i class="fa fa-trash-alt"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="remplazos.length === 0">
+                          <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fas fa-exchange-alt fa-2x mb-2"></i><br />
+                            No hay remplazos registrados
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="pane-equivalencias" role="tabpanel">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <p class="text-muted mb-0">
+                      Productos equivalentes con proveedores relacionados.
+                    </p>
+                    <div class="d-flex gap-2">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary d-flex align-items-center"
+                        (click)="saveEquivalencias()"
+                      >
+                        <i class="fa fa-save me-1"></i> Actualizar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary d-flex align-items-center"
+                        (click)="addEquivalencia()"
+                      >
+                        <i class="fa fa-plus me-1"></i> Agregar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Observaciones</th>
+                          <th>Proveedores</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <ng-container
+                          *ngFor="let eq of equivalencias; let i = index"
+                        >
+                          <tr>
+                            <td style="min-width: 260px">
+                              <input
+                                class="form-control"
+                                [attr.list]="'equivalencia-options-' + i"
+                                [(ngModel)]="eq.search"
+                                [name]="'equivalencia_search_' + i"
+                                (input)="eq.replacement_item_id = null"
+                                (blur)="resolveEquivalenciaSelection(i)"
+                              />
+                              <datalist [id]="'equivalencia-options-' + i">
+                                <option
+                                  *ngFor="
+                                    let option of getFilteredItemOptions(eq.search)
+                                  "
+                                  [value]="option.name"
+                                ></option>
+                              </datalist>
+                              <div
+                                *ngIf="
+                                  eq.replacement_item_id === null &&
+                                  eq.search.trim().length > 0 &&
+                                  getFilteredItemOptions(eq.search).length > 0
+                                "
+                                class="mt-2"
+                              >
+                                <div class="list-group">
+                                  <button
+                                    type="button"
+                                    class="list-group-item list-group-item-action"
+                                    *ngFor="
+                                      let option of getFilteredItemOptions(eq.search)
+                                    "
+                                    (click)="selectEquivalenciaItem(i, option)"
+                                  >
+                                    {{ option.name }}
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <input
+                                class="form-control"
+                                [(ngModel)]="eq.observations"
+                                [name]="'equivalencia_observations_' + i"
+                                type="text"
+                              />
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                [disabled]="!eq.providers.length"
+                                (click)="toggleEquivalencia(i)"
+                              >
+                                Ver proveedores ({{ eq.providers.length || 0 }})
+                              </button>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-transparent"
+                                title="Eliminar"
+                                (click)="removeEquivalencia(i)"
+                              >
+                                <i class="fa fa-trash-alt"></i>
+                              </button>
+                            </td>
+                          </tr>
+                          <tr *ngIf="expandedEquivalencias.has(i)">
+                            <td colspan="4">
+                              <div class="table-responsive">
+                                <table class="table table-sm table-striped mb-0">
+                                  <thead class="table-light">
+                                    <tr>
+                                      <th>Proveedor</th>
+                                      <th># Catálogo</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr *ngFor="let p of eq.providers">
+                                      <td>{{ p.shortname || p.name || "-" }}</td>
+                                      <td>{{ p.provider_code || "-" }}</td>
+                                    </tr>
+                                    <tr *ngIf="!eq.providers?.length">
+                                      <td colspan="2" class="text-muted">
+                                        No hay proveedores relacionados.
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </td>
+                          </tr>
+                        </ng-container>
+                        <tr *ngIf="equivalencias.length === 0">
+                          <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-random fa-2x mb-2"></i><br />
+                            No hay equivalencias registradas
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div
+                  class="tab-pane fade"
+                  id="pane-related-products"
+                  role="tabpanel"
+                  *ngIf="product.configuration?.relates_to_other_products"
+                >
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <p class="text-muted mb-0">
+                      Productos relacionados con este producto.
+                    </p>
+                    <div class="d-flex gap-2">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary d-flex align-items-center"
+                        (click)="saveRelatedProducts()"
+                        [disabled]="!hasRelatedProducts()"
+                      >
+                        <i class="fa fa-save me-1"></i> Actualizar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary d-flex align-items-center"
+                        (click)="addRelatedProduct()"
+                      >
+                        <i class="fa fa-plus me-1"></i> Agregar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let rel of relatedProducts; let i = index">
+                          <td style="min-width: 260px">
+                            <input
+                              class="form-control"
+                              [attr.list]="'related-options-' + i"
+                              [(ngModel)]="rel.search"
+                              [name]="'related_search_' + i"
+                              (input)="rel.item_id = null"
+                              (blur)="resolveRelatedProductSelection(i)"
+                            />
+                            <datalist [id]="'related-options-' + i">
+                              <option
+                                *ngFor="
+                                  let option of getFilteredItemOptions(rel.search)
+                                "
+                                [value]="option.name"
+                              ></option>
+                            </datalist>
+                            <div
+                              *ngIf="
+                                rel.item_id === null &&
+                                rel.search.trim().length > 0 &&
+                                getFilteredItemOptions(rel.search).length > 0
+                              "
+                              class="mt-2"
+                            >
+                              <div class="list-group">
+                                <button
+                                  type="button"
+                                  class="list-group-item list-group-item-action"
+                                  *ngFor="
+                                    let option of getFilteredItemOptions(rel.search)
+                                  "
+                                  (click)="selectRelatedProduct(i, option)"
+                                >
+                                  {{ option.name }}
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-transparent"
+                              title="Eliminar"
+                              (click)="removeRelatedProduct(i)"
+                            >
+                              <i class="fa fa-trash-alt"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="relatedProducts.length === 0">
+                          <td colspan="2" class="text-center text-muted py-4">
+                            <i class="fas fa-link fa-2x mb-2"></i><br />
+                            No hay productos relacionados
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="pane-config" role="tabpanel">
+                  <div class="d-flex justify-content-end mb-3">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-primary"
+                      (click)="saveConfiguration()"
+                    >
+                      Actualizar configuracion
+                    </button>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="edit_requires_lot"
+                          [(ngModel)]="product.configuration.requires_lot"
+                          name="requires_lot"
+                        />
+                        <label class="form-check-label" for="edit_requires_lot">
+                          Requiere lote
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="edit_requires_expiration_date"
+                          [(ngModel)]="product.configuration.requires_expiration_date"
+                          name="requires_expiration_date"
+                        />
+                        <label
+                          class="form-check-label"
+                          for="edit_requires_expiration_date"
+                        >
+                          Requiere fecha de caducidad
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="edit_requires_manufacture_date"
+                          [(ngModel)]="product.configuration.requires_manufacture_date"
+                          name="requires_manufacture_date"
+                        />
+                        <label
+                          class="form-check-label"
+                          for="edit_requires_manufacture_date"
+                        >
+                          Requiere fecha de fabricación
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="edit_requires_invoice"
+                          [(ngModel)]="product.configuration.requires_invoice"
+                          name="requires_invoice"
+                        />
+                        <label
+                          class="form-check-label"
+                          for="edit_requires_invoice"
+                        >
+                          Se factura
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="edit_relates_to_other_products"
+                          [(ngModel)]="product.configuration.relates_to_other_products"
+                          name="relates_to_other_products"
+                        />
+                        <label
+                          class="form-check-label"
+                          for="edit_relates_to_other_products"
+                        >
+                          Se relaciona con otros productos
+                        </label>
+                      </div>
+                      <div
+                        class="alert alert-info py-2 mt-2"
+                        *ngIf="product.configuration?.relates_to_other_products"
+                      >
+                        Al activar esta opción se mostrará la sección de productos
+                        relacionados.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

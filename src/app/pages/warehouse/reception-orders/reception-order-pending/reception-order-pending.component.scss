@@ -1,0 +1,38 @@
+.main-content {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 15px;
+  }
+}
+
+.card {
+  border-width: 2px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  font-size: 0.9rem;
+}
+
+.card-body p {
+  font-size: 0.9rem;
+}
+
+.progress {
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+}
+
+.btn-group-sm .btn {
+  font-size: 0.8rem;
+}

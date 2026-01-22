@@ -1,0 +1,136 @@
+/* .dropdown-menu {
+  border: none !important;
+} */
+
+/* .scrollable-menu {
+  max-height: 300px; /* Ajusta esta altura según tus necesidades */
+  /* overflow-y: auto;
+} */
+/*
+.navbar-scrollable {
+  max-height: 80vh;
+  overflow-y: auto;
+} */
+
+
+/*.nav-item.active .nav-link {
+  font-weight: bold;
+
+} */
+
+/* .nav-item.active .nav-link {
+  font-weight: bold;
+  color: #000 !important;
+  background-color: #f8f9fa !important;
+}  */
+
+/* Estilos forzados para hacer todo más pequeño y funcional */
+.navbar-nav {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.nav-item {
+  position: relative !important;
+  margin: 0 0.1rem !important;
+  font-size: 0.85rem !important;
+}
+
+.nav-link {
+  padding: 0.3rem 0.5rem !important;
+  white-space: nowrap !important;
+  font-size: inherit !important;
+}
+
+.dropdown-toggle::after {
+  margin-left: 0.3em !important;
+  vertical-align: 0.15em !important;
+  font-size: 0.7rem !important;
+}
+
+.dropdown-menu {
+  position: absolute !important;
+  margin-top: 0 !important;
+  font-size: 0.85rem !important;
+  min-width: 10rem !important;
+  padding: 0.2rem 0 !important;
+}
+
+.dropdown-item {
+  padding: 0.3rem 1rem !important;
+  font-size: inherit !important;
+}
+
+/* Hover forzado para desktop */
+@media (min-width: 992px) {
+  .nav-item.dropdown:hover .dropdown-menu {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+  }
+
+  .dropdown-menu {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-10px) !important;
+    transition: all 0.2s ease-out !important;
+  }
+}
+
+/* Estilos para móvil */
+@media (max-width: 991.98px) {
+  .navbar-nav {
+    flex-direction: column !important;
+  }
+
+  .nav-item {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .dropdown-menu {
+    position: static !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border-left: 2px solid #0d6efd !important;
+    display: none !important;
+    padding-left: 1rem !important;
+  }
+
+  .dropdown-menu.show {
+    display: block !important;
+  }
+}
+
+/* Estilos visuales básicos */
+.nav-link.text-primary:hover, .dropdown-item.text-primary:hover {
+  color: #fff !important; /* Mantener texto blanco al pasar el mouse */
+  background-color: #0b5ed7 !important; /* Color hover de btn-primary */
+}
+
+.nav-item.active .nav-link {
+  font-weight: 600 !important;
+  background-color: #f0f4ff !important;
+}
+
+.dropdown-item.active {
+  font-weight: 600 !important;
+  background-color: #f0f4ff !important;
+}
+
+/* Ajuste especial para el menú de usuario */
+.navbar-nav .nav-item:last-child {
+  margin-left: auto !important;
+}
+
+@media (max-width: 992px) {
+  .navbar-nav .nav-item:last-child {
+    margin-left: 0 !important;
+  }
+}

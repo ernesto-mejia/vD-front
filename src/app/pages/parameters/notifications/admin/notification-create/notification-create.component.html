@@ -1,0 +1,323 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="container-fluid py-4">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="fa fa-plus-circle"></i> Nueva Notificación
+          </h4>
+        </div>
+
+        <div class="card-body">
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <!-- Información Básica -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fa fa-info-circle"></i> Información Básica
+                </h5>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Tipo de Notificación <span class="text-danger">*</span></label>
+                <select title="seleccionar tipo" class="form-select" formControlName="type">
+                  <option *ngFor="let t of notificationTypes" [value]="t.value">{{ t.label }}</option>
+                </select>
+                <small class="text-muted">
+                  {{ form.get('type')?.value === 'authorization' ? 'Requiere aprobación de un autorizador' : 'Notificación informativa' }}
+                </small>
+              </div>
+
+              <div class="col-md-5 mb-3">
+                <label class="form-label">Título <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="title"
+                      placeholder="Título de la notificación" maxlength="255">
+                <div *ngIf="form.get('title')?.invalid && form.get('title')?.touched" class="text-danger small">
+                  Título requerido (máx. 255 caracteres)
+                </div>
+              </div>
+
+              <div class="col-md-2 mb-3">
+                <label class="form-label">Módulo <span class="text-danger">*</span></label>
+                <select title="seleccionar modulo" class="form-select" formControlName="module">
+                  <option value="">Seleccionar módulo</option>
+                  <option *ngFor="let m of moduleOptions" [value]="m.value">{{ m.label }}</option>
+                </select>
+                <div *ngIf="form.get('module')?.invalid && form.get('module')?.touched" class="text-danger small">
+                  Módulo requerido
+                </div>
+              </div>
+
+              <div class="col-md-2 mb-3">
+                <label class="form-label">Acción <span class="text-danger">*</span></label>
+                <select title="seleccionar acción" class="form-select" formControlName="action" [attr.disabled]="currentActions.length === 0 ? true : null">
+                  <option value="">Seleccionar acción</option>
+                  <option *ngFor="let a of currentActions" [value]="a.value">{{ a.label }}</option>
+                </select>
+                <div *ngIf="form.get('action')?.invalid && form.get('action')?.touched" class="text-danger small">
+                  Acción requerida
+                </div>
+                <small *ngIf="currentActions.length === 0 && form.get('module')?.value" class="text-muted">
+                  Selecciona un módulo primero
+                </small>
+              </div>
+
+              <div class="col-md-12 mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea class="form-control" formControlName="body" rows="3"
+                          placeholder="Descripción detallada de la notificación (opcional)"></textarea>
+              </div>
+            </div>
+
+            <!-- Configuración de Autorización (solo visible si type = 'authorization') -->
+            <div class="row mb-4" *ngIf="isAuthorizationType">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fa fa-check-circle"></i> Configuración de Autorización
+                </h5>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Tipo de Entidad <span class="text-danger">*</span></label>
+                <select title="seleccionar tipo de entidad" class="form-select" formControlName="authorizable_type">
+                  <option value="">Seleccionar tipo</option>
+                  <option value="document">Documento</option>
+                  <option value="contract">Contrato</option>
+                  <option value="inventory">Inventario</option>
+                  <option value="item">Artículo</option>
+                  <option value="ticket">Ticket</option>
+                  <option value="equipment">Equipo</option>
+                  <option value="employee">Empleado</option>
+                </select>
+                <div *ngIf="form.get('authorizable_type')?.invalid && form.get('authorizable_type')?.touched" class="text-danger small">
+                  Tipo de entidad requerido
+                </div>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">ID de Entidad</label>
+                <input type="number" class="form-control" formControlName="authorizable_id"
+                      placeholder="ID del registro (opcional para plantillas)">
+                <small class="text-muted">Dejar vacío para crear una plantilla</small>
+              </div>
+
+              <div class="col-md-2 mb-3">
+                <label class="form-label">Campo a Modificar <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="authorization_field"
+                      placeholder="Ej: status">
+                <small class="text-muted">Campo del modelo</small>
+              </div>
+
+              <div class="col-md-2 mb-3">
+                <label class="form-label">Valor si Aprueba <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="approve_value"
+                      placeholder="Ej: approved">
+              </div>
+
+              <div class="col-md-2 mb-3">
+                <label class="form-label">Valor si Rechaza <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="reject_value"
+                      placeholder="Ej: rejected">
+              </div>
+
+              <div class="col-12">
+                <div class="alert alert-info">
+                  <i class="fa fa-info-circle"></i>
+                  <strong>¿Cómo funciona?</strong> Cuando el autorizador apruebe o rechace, el sistema actualizará
+                  automáticamente el campo <code>{{ form.get('authorization_field')?.value || 'status' }}</code>
+                  del registro con el valor correspondiente.
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuración de Severidad y Escalamiento -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fa fa-traffic-light"></i> Severidad y Escalamiento
+                </h5>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Severidad Inicial <span class="text-danger">*</span></label>
+                <select title="seleccionar severidad" class="form-select" formControlName="severity">
+                  <option *ngFor="let s of severities" [value]="s">
+                    {{ getSeverityLabel(s) }}
+                  </option>
+                </select>
+                <small class="text-muted">Nivel de urgencia inicial</small>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Escalamiento Automático</label>
+                <div class="form-check form-switch mt-2">
+                  <input class="form-check-input" type="checkbox" formControlName="escalation_enabled" id="escalationEnabled">
+                  <label class="form-check-label" for="escalationEnabled">
+                    Activar escalamiento
+                  </label>
+                </div>
+                <small class="text-muted d-block">Si no se atiende, escala a mayor severidad</small>
+              </div>
+
+              <div class="col-md-3 mb-3" *ngIf="form.get('escalation_enabled')?.value">
+                <label class="form-label">Tiempo de Escalamiento</label>
+                <select title="seleccionar tiempo de escalamiento" class="form-select" formControlName="escalation_hours">
+                  <option *ngFor="let h of escalationHoursOptions" [value]="h">
+                    {{ h }} {{ h === 1 ? 'hora' : 'horas' }}
+                  </option>
+                </select>
+                <small class="text-muted">Tiempo sin atención para escalar</small>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Canales <span class="text-danger">*</span></label>
+                <ng-select
+                  [items]="channels"
+                  formControlName="channels"
+                  [multiple]="true"
+                  placeholder="Selecciona canales"
+                  [closeOnSelect]="false">
+                  <ng-template ng-label-tmp let-item="item">
+                    <span class="badge" [class.bg-info]="item === 'push'" [class.bg-secondary]="item === 'email'">
+                      <i class="fa" [class.fa-bell]="item === 'push'" [class.fa-envelope]="item === 'email'"></i>
+                      {{ getChannelLabel(item) }}
+                    </span>
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <i class="fa me-2" [class.fa-bell]="item === 'push'" [class.fa-envelope]="item === 'email'"></i>
+                    {{ getChannelLabel(item) }}
+                  </ng-template>
+                </ng-select>
+                <div *ngIf="form.get('channels')?.invalid && form.get('channels')?.touched" class="text-danger small">
+                  Debe seleccionar al menos un canal
+                </div>
+              </div>
+
+              <div class="col-md-3 mb-3">
+                <label class="form-label">Bloqueo Crítico</label>
+                <div class="form-check form-switch mt-2">
+                  <input class="form-check-input" type="checkbox" formControlName="requires_blocking" id="requiresBlocking">
+                  <label class="form-check-label" for="requiresBlocking">
+                    Bloquear sistema si es crítico
+                  </label>
+                </div>
+                <small class="text-muted d-block">
+                  Si escala a crítico, bloqueará la interfaz hasta atención
+                </small>
+              </div>
+            </div>
+
+            <!-- Indicador visual de escalamiento (solo si está activo) -->
+            <div class="row mb-4" *ngIf="form.get('escalation_enabled')?.value && form.get('severity')?.value !== 'critical'">
+              <div class="col-12">
+                <div class="escalation-preview p-3 bg-light rounded">
+                  <h6 class="mb-2"><i class="fa fa-chart-line"></i> Vista previa de escalamiento</h6>
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="badge" [ngClass]="{
+                      'bg-success': form.get('severity')?.value === 'info',
+                      'bg-warning text-dark': form.get('severity')?.value === 'warning'
+                    }">
+                      {{ getSeverityLabel(form.get('severity')?.value || 'info') }}
+                    </span>
+                    <i class="fa fa-arrow-right text-muted"></i>
+                    <span class="badge bg-warning text-dark" *ngIf="form.get('severity')?.value === 'info'">
+                      Advertencia ({{ form.get('escalation_hours')?.value }}h)
+                    </span>
+                    <i class="fa fa-arrow-right text-muted" *ngIf="form.get('severity')?.value === 'info'"></i>
+                    <span class="badge bg-danger">
+                      Crítico ({{ form.get('severity')?.value === 'info' ? (form.get('escalation_hours')?.value * 2) : form.get('escalation_hours')?.value }}h)
+                      <i class="fa fa-lock ms-1" *ngIf="form.get('requires_blocking')?.value"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Destinatarios -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h5 class="border-bottom pb-2 mb-3">
+                  <i class="fa fa-users"></i> Destinatarios
+                  <span class="badge bg-secondary ms-2">{{ destinatariosCount }}</span>
+                </h5>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Usuarios específicos</label>
+                <ng-select
+                  [items]="users"
+                  bindLabel="name"
+                  bindValue="id"
+                  formControlName="user_ids"
+                  [multiple]="true"
+                  placeholder="Selecciona usuarios"
+                  [loading]="loading"
+                  [searchable]="true"
+                  [closeOnSelect]="false">
+                  <ng-template ng-option-tmp let-item="item" let-index="index">
+                    <div class="d-flex align-items-center">
+                      <i class="fa fa-user me-2"></i>
+                      <div>
+                        <div>{{ item?.name || item?.nombre || 'Usuario ' + (index + 1) }}</div>
+                        <small class="text-muted" *ngIf="item?.email">{{ item.email }}</small>
+                      </div>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <small class="text-muted">Usuarios individuales que recibirán la notificación</small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Roles</label>
+                <ng-select
+                  [items]="roles"
+                  bindLabel="name"
+                  bindValue="id"
+                  formControlName="role_ids"
+                  [multiple]="true"
+                  placeholder="Selecciona roles"
+                  [loading]="loading"
+                  [searchable]="true"
+                  [closeOnSelect]="false">
+                  <ng-template ng-option-tmp let-item="item" let-index="index">
+                    <i class="fa fa-users me-2"></i> {{ item?.name || item?.nombre || 'Rol ' + (index + 1) }}
+                  </ng-template>
+                </ng-select>
+                <small class="text-muted">Todos los usuarios con estos roles recibirán la notificación</small>
+              </div>
+
+              <div class="col-12" *ngIf="destinatariosCount === 0">
+                <div class="alert alert-warning">
+                  <i class="fa fa-exclamation-triangle"></i>
+                  No has seleccionado ningún destinatario. La notificación no llegará a nadie.
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="row">
+              <div class="col-12">
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="saving">
+                    <i class="fa fa-times"></i> Cancelar
+                  </button>
+                  <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+                    <i class="fa" [class.fa-save]="!saving" [class.fa-spinner]="saving" [class.fa-spin]="saving"></i>
+                    {{ saving ? 'Guardando...' : 'Crear Notificación' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error message -->
+            <div *ngIf="error" class="alert alert-danger mt-3" role="alert">
+              <i class="fa fa-exclamation-triangle"></i> {{ error }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,442 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <!-- Loading -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando contrato...</p>
+      </div>
+
+      <div *ngIf="!loading" class="card shadow-sm">
+        <!-- Header -->
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-edit me-2"></i>Editar Contrato de Cliente
+              </h5>
+              <small>ID: {{ contractId }}</small>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button class="btn btn-warning btn-sm" (click)="saveContract()" [disabled]="saving">
+                <i class="fas fa-save me-1"></i>Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Sección: Información del Cliente -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-building me-2"></i>Información del Cliente
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="customer" class="form-label">
+                  <span class="text-danger">*</span> Cliente
+                </label>
+                <ng-select
+                  [items]="customers"
+                  bindLabel="shortname"
+                  bindValue="id"
+                  [(ngModel)]="contract.customer_id"
+                  (change)="onCustomerChange($event)"
+                  [searchFn]="customerSearchFn"
+                  [loading]="loadingCustomers"
+                  [clearable]="true"
+                  placeholder="Buscar cliente..."
+                  [class.is-invalid]="submitted && !contract.customer_id">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.shortname }} - {{ item.company }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="d-flex flex-column">
+                      <span class="fw-bold">{{ item.shortname }}</span>
+                      <small class="text-muted">{{ item.company }} | RFC: {{ item.tax_id }}</small>
+                    </div>
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Razón Social</label>
+                <input type="text" class="form-control" [(ngModel)]="customerCompany" readonly>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Datos del Contrato -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-clipboard-list me-2"></i>Datos del Contrato
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label"><span class="text-danger">*</span> Nombre del Proyecto</label>
+                <input type="text" class="form-control" [(ngModel)]="contract.project_name"
+                       [class.is-invalid]="submitted && !contract.project_name">
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Número de Contrato</label>
+                <input type="text" class="form-control" [(ngModel)]="contract.contract_number">
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Número de Licitación</label>
+                <input type="text" class="form-control" [(ngModel)]="contract.licitation_number">
+              </div>
+
+              <div class="col-md-12">
+                <label class="form-label">
+                  <span class="text-danger">*</span> Regiones ({{ customerRegionSystem?.name || 'Delegaciones' }})
+                </label>
+                <ng-select
+                  [items]="customerRegions"
+                  bindLabel="name"
+                  bindValue="id"
+                  [(ngModel)]="selectedRegionIds"
+                  (change)="onRegionsChange()"
+                  [multiple]="true"
+                  [loading]="loadingRegions"
+                  [disabled]="!contract.customer_id"
+                  [closeOnSelect]="false"
+                  placeholder="Seleccione una o más regiones..."
+                  [class.is-invalid]="submitted && selectedRegionIds.length === 0">
+                  <ng-template ng-option-tmp let-item="item">
+                    <span class="fw-bold">{{ item.name }}</span>
+                    <small class="text-muted ms-2" *ngIf="item.code">[{{ item.code }}]</small>
+                  </ng-template>
+                </ng-select>
+                <small class="text-muted">{{ selectedRegionIds.length }} región(es) seleccionada(s)</small>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label"><span class="text-danger">*</span> Fecha de Inicio</label>
+                <input type="date" class="form-control" [(ngModel)]="contract.start_date"
+                       [class.is-invalid]="submitted && !contract.start_date">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label"><span class="text-danger">*</span> Fecha de Fin</label>
+                <input type="date" class="form-control" [(ngModel)]="contract.end_date"
+                       [class.is-invalid]="submitted && (!contract.end_date || !validateDates())">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Estado del Contrato</label>
+                <ng-select
+                  [items]="contractStatuses"
+                  bindLabel="name"
+                  bindValue="id"
+                  [(ngModel)]="contract.status_id"
+                  [clearable]="false"
+                  placeholder="Seleccione estado...">
+                  <ng-template ng-option-tmp let-item="item">
+                    <span [ngClass]="{
+                      'text-warning': item.name === 'Borrador',
+                      'text-success': item.name === 'Vigente',
+                      'text-danger': item.name === 'Vencido' || item.name === 'Cancelado',
+                      'text-secondary': item.name === 'Finalizado'
+                    }">
+                      <i class="fas fa-circle me-2" style="font-size: 8px;"></i>{{ item.name }}
+                    </span>
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Descripción del Contrato</label>
+                <textarea class="form-control" [(ngModel)]="contract.description" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Direcciones -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-hospital me-2"></i>Unidades Médicas / Direcciones
+            </h6>
+            <div class="row g-3">
+              <div class="col-12">
+                <ng-select
+                  [items]="customerAddresses"
+                  bindValue="id"
+                  [(ngModel)]="selectedAddressIds"
+                  [multiple]="true"
+                  [loading]="loadingAddresses"
+                  [disabled]="!contract.customer_id || selectedRegionIds.length === 0"
+                  [closeOnSelect]="false"
+                  placeholder="Seleccione unidades médicas..."
+                  [class.is-invalid]="submitted && selectedAddressIds.length === 0">
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.shortname || item.address || 'Sin nombre' }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="d-flex flex-column">
+                      <span class="fw-bold">{{ item.shortname || item.address || 'Sin nombre' }}</span>
+                      <small class="text-muted">{{ item.city }}, {{ item.state }}</small>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <small class="text-muted">{{ selectedAddressIds.length }} unidad(es) seleccionada(s)</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Pruebas -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-flask me-2"></i>Pruebas / Estudios
+            </h6>
+            <div class="row g-3">
+              <div class="col-12">
+                <ng-select
+                  [items]="items"
+                  bindLabel="name"
+                  bindValue="id"
+                  [(ngModel)]="selectedItemIds"
+                  [multiple]="true"
+                  [loading]="loadingItems"
+                  [searchable]="true"
+                  [closeOnSelect]="false"
+                  placeholder="Buscar y seleccionar pruebas..."
+                  [class.ng-invalid]="submitted && selectedItemIds.length === 0">
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <span class="fw-bold">{{ item.name }}</span>
+                        <small class="text-muted ms-2" *ngIf="item.code">[{{ item.code }}]</small>
+                      </div>
+                      <span class="badge bg-info" *ngIf="item.unit_price">${{ item.unit_price | number:'1.2-2' }}</span>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <small class="text-muted">{{ selectedItemIds.length }} prueba(s) seleccionada(s)</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Montos -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-dollar-sign me-2"></i>Montos del Contrato
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label"><span class="text-danger">*</span> Monto Mínimo</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" [(ngModel)]="contract.min_amount" min="0" step="0.01">
+                  <span class="input-group-text">MXN</span>
+                </div>
+                <small class="text-muted">Monto mínimo garantizado</small>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label"><span class="text-danger">*</span> Monto Máximo</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" [(ngModel)]="contract.max_amount" min="0" step="0.01"
+                         [class.is-invalid]="submitted && !validateAmounts()">
+                  <span class="input-group-text">MXN</span>
+                </div>
+                <small class="text-muted">Monto máximo a pagar</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Afianzadora -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-shield-alt me-2"></i>Afianzadora (Opcional)
+            </h6>
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="hasBonding"
+                         [(ngModel)]="contract.has_bonding" (change)="onHasBondingChange()">
+                  <label class="form-check-label" for="hasBonding">
+                    El contrato requiere afianzadora
+                  </label>
+                </div>
+              </div>
+
+              <ng-container *ngIf="contract.has_bonding">
+                <div class="col-md-6">
+                  <label class="form-label"><span class="text-danger">*</span> Compañía Afianzadora</label>
+                  <ng-select
+                    [items]="bondingCompanies"
+                    bindLabel="company"
+                    bindValue="id"
+                    [(ngModel)]="contract.bonding_company_id"
+                    [clearable]="true"
+                    placeholder="Seleccione afianzadora..."
+                    [class.is-invalid]="submitted && contract.has_bonding && !contract.bonding_company_id">
+                    <ng-template ng-option-tmp let-item="item">
+                      <span class="fw-bold">{{ item.company }}</span>
+                      <small class="text-muted ms-2">{{ item.shortname }}</small>
+                    </ng-template>
+                  </ng-select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label"><span class="text-danger">*</span> Monto de Fianza</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="contract.bonding_amount"
+                           min="0" step="0.01" placeholder="0.00"
+                           [class.is-invalid]="submitted && contract.has_bonding && !contract.bonding_amount">
+                    <span class="input-group-text">MXN</span>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Vigencia de Fianza (Inicio)</label>
+                  <input type="date" class="form-control" [(ngModel)]="contract.bonding_start_date">
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Vigencia de Fianza (Fin)</label>
+                  <input type="date" class="form-control" [(ngModel)]="contract.bonding_end_date">
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Sección: Documentos del Contrato -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-file-alt me-2"></i>Documentos del Contrato
+            </h6>
+
+            <!-- Lista de documentos existentes -->
+            <div *ngIf="contractDocuments.length > 0" class="mb-4">
+              <h6 class="text-muted mb-3">
+                <i class="fas fa-folder-open me-1"></i>Documentos cargados ({{ contractDocuments.length }})
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Nombre del archivo</th>
+                      <th>Tamaño</th>
+                      <th>Fecha</th>
+                      <th class="text-end">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let doc of contractDocuments; let i = index">
+                      <td>
+                        <span class="badge bg-secondary">
+                          {{ getDocumentTypeName(doc.document_type_id) }}
+                        </span>
+                      </td>
+                      <td>
+                        <i class="fas fa-file-pdf text-danger me-1" *ngIf="doc.filename?.endsWith('.pdf')"></i>
+                        <i class="fas fa-file-excel text-success me-1" *ngIf="doc.filename?.endsWith('.xlsx') || doc.filename?.endsWith('.xls')"></i>
+                        <i class="fas fa-file-word text-primary me-1" *ngIf="doc.filename?.endsWith('.docx') || doc.filename?.endsWith('.doc')"></i>
+                        <i class="fas fa-file-image text-info me-1" *ngIf="doc.filename?.endsWith('.jpg') || doc.filename?.endsWith('.png') || doc.filename?.endsWith('.jpeg')"></i>
+                        <i class="fas fa-file me-1" *ngIf="!doc.filename?.endsWith('.pdf') && !doc.filename?.endsWith('.xlsx') && !doc.filename?.endsWith('.xls') && !doc.filename?.endsWith('.docx') && !doc.filename?.endsWith('.doc') && !doc.filename?.endsWith('.jpg') && !doc.filename?.endsWith('.png') && !doc.filename?.endsWith('.jpeg')"></i>
+                        {{ doc.original_name || doc.filename }}
+                      </td>
+                      <td>{{ formatFileSize(doc.size) }}</td>
+                      <td>{{ doc.last_modified | date:'dd/MM/yyyy HH:mm' }}</td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                          <button class="btn btn-outline-primary" (click)="downloadDocument(doc)"
+                                  title="Descargar documento">
+                            <i class="fas fa-download"></i>
+                          </button>
+                          <label class="btn btn-outline-warning" title="Reemplazar documento">
+                            <i class="fas fa-sync-alt"></i>
+                            <input type="file" class="d-none" (change)="replaceDocument(doc, $event)">
+                          </label>
+                          <button class="btn btn-outline-danger" (click)="deleteDocument(doc, i)"
+                                  title="Eliminar documento">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div *ngIf="contractDocuments.length === 0" class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              No hay documentos cargados para este contrato.
+            </div>
+
+            <!-- Subir nuevo documento -->
+            <div class="mt-3">
+              <h6 class="text-muted mb-3">
+                <i class="fas fa-upload me-1"></i>Subir nuevo documento
+              </h6>
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label">Tipo de documento</label>
+                  <select class="form-select" [(ngModel)]="newDocumentTypeId">
+                    <option [ngValue]="null">Seleccionar tipo...</option>
+                    <option *ngFor="let type of documentTypes" [ngValue]="type.id">{{ type.name }}</option>
+                  </select>
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label">Archivo</label>
+                  <input type="file" class="form-control" #newDocInput (change)="onNewDocumentSelected($event)">
+                </div>
+                <div class="col-md-3">
+                  <button class="btn btn-success w-100" (click)="uploadNewDocument(newDocInput)"
+                          [disabled]="!newDocumentFile || !newDocumentTypeId || uploadingDocument">
+                    <i class="fas fa-cloud-upload-alt me-1"></i>
+                    {{ uploadingDocument ? 'Subiendo...' : 'Subir' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Alertas -->
+          <div class="epica-form-section mb-4">
+            <h6 class="epica-form-section-title border-bottom pb-2 mb-3">
+              <i class="fas fa-bell me-2"></i>Configuración de Alertas
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Días de anticipación para alerta de vencimiento</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" [(ngModel)]="contract.alert_days_before"
+                         min="1" max="365" placeholder="30">
+                  <span class="input-group-text">días</span>
+                </div>
+                <small class="text-muted">Se enviará una notificación antes del vencimiento del contrato</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button class="btn btn-secondary" (click)="goBack()">
+              <i class="fas fa-times me-1"></i>Cancelar
+            </button>
+            <button class="btn btn-primary" (click)="saveContract()" [disabled]="saving">
+              <i class="fas fa-save me-1"></i>{{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,56 @@
+<dl class="row mb-0">
+  <dt class="col-sm-3">Requiere lote</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.configuration?.requires_lot === true
+        ? "Sí"
+        : product?.configuration?.requires_lot === false
+        ? "No"
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Requiere fecha de caducidad</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.configuration?.requires_expiration_date === true
+        ? "Sí"
+        : product?.configuration?.requires_expiration_date === false
+        ? "No"
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Requiere fecha de fabricación</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.configuration?.requires_manufacture_date === true
+        ? "Sí"
+        : product?.configuration?.requires_manufacture_date === false
+        ? "No"
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Se factura</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.configuration?.requires_invoice === true
+        ? "Sí"
+        : product?.configuration?.requires_invoice === false
+        ? "No"
+        : "-"
+    }}
+  </dd>
+
+  <dt class="col-sm-3">Se relaciona con otros productos</dt>
+  <dd class="col-sm-9">
+    {{
+      product?.configuration?.relates_to_other_products === true
+        ? "Sí"
+        : product?.configuration?.relates_to_other_products === false
+        ? "No"
+        : "-"
+    }}
+  </dd>
+</dl>

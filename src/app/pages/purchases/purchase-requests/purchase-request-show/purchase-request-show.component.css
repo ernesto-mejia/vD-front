@@ -1,0 +1,149 @@
+.main-content {
+  padding-top: 0;
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.card {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.card-header {
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #6c757d;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  position: relative;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #0d6efd;
+  background: transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: #0d6efd;
+  background: transparent;
+  border: none;
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #0d6efd;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  border-bottom-width: 1px;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.75rem;
+}
+
+.badge[style*="background-color"] {
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #dee2e6;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.timeline-item.last {
+  padding-bottom: 0;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -1.75rem;
+  top: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #fff;
+  border: 2px solid #dee2e6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.timeline-content {
+  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+/* Success border */
+.border-success {
+  border: 1px solid #198754 !important;
+}
+
+/* Primary subtle background */
+.bg-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+  .d-flex.justify-content-between.align-items-start {
+    flex-direction: column;
+  }
+
+  .d-flex.gap-2.flex-wrap {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .d-flex.gap-2.flex-wrap .btn {
+    flex: 1;
+  }
+}

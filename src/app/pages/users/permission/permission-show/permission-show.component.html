@@ -1,0 +1,140 @@
+<div>
+  <div>
+    <app-sidebar></app-sidebar>
+  </div>
+  <div class="p-5">
+    <div class="container-fluid">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3">Cargando información del permiso...</p>
+      </div>
+
+      <!-- Card View -->
+      <div *ngIf="!loading && permission" class="row">
+        <div class="col-lg-10">
+          <div class="card border-0 shadow-sm">
+            <!-- Header -->
+            <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+              <h4 class="mb-0">
+                <i class="fas fa-lock-open me-2"></i> Detalles del Permiso
+              </h4>
+              <div class="badge bg-light text-dark">ID: {{ permission.id }}</div>
+            </div>
+
+            <!-- Content -->
+            <div class="card-body">
+              <div class="row g-4">
+                <!-- Left Column -->
+                <div class="col-lg-6">
+                  <!-- Nombre -->
+                  <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-bold">
+                      <i class="fas fa-tag me-2"></i>Nombre del Permiso
+                    </label>
+                    <div class="p-3 bg-light rounded border-start border-primary border-4">
+                      <p class="mb-0 fs-5 fw-semibold">{{ permission.name }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Guard Name -->
+                  <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-bold">
+                      <i class="fas fa-shield-alt me-2"></i>Guard Name
+                    </label>
+                    <div class="p-3 bg-light rounded border-start border-info border-4">
+                      <p class="mb-0 fs-5 fw-semibold">{{ permission.guard_name || 'No especificado' }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-6">
+                  <!-- Creado -->
+                  <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-bold">
+                      <i class="fas fa-calendar-plus me-2"></i>Fecha de Creación
+                    </label>
+                    <div class="p-3 bg-light rounded border-start border-success border-4">
+                      <p class="mb-0 fs-5 fw-semibold">{{ permission.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Actualizado -->
+                  <div class="mb-4">
+                    <label class="form-label text-muted small text-uppercase fw-bold">
+                      <i class="fas fa-calendar-check me-2"></i>Última Actualización
+                    </label>
+                    <div class="p-3 bg-light rounded border-start border-warning border-4">
+                      <p class="mb-0 fs-5 fw-semibold">{{ permission.updated_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info Box -->
+              <div class="row mt-4">
+                <div class="col-12">
+                  <div class="alert alert-light border-2 border-primary-subtle">
+                    <h6 class="alert-heading mb-2">
+                      <i class="fas fa-info-circle me-2"></i>Información del Permiso
+                    </h6>
+                    <p class="mb-0 small text-muted">
+                      Este permiso fue creado el <strong>{{ permission.created_at | date: 'dd MMM yyyy' }}</strong>
+                      y se actualizó por última vez el <strong>{{ permission.updated_at | date: 'dd MMM yyyy' }}</strong>.
+                      Los permisos se utilizan para controlar el acceso a funcionalidades específicas del sistema.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer with Actions -->
+            <div class="card-footer bg-light py-3 d-flex justify-content-between align-items-center">
+              <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+                <i class="fas fa-arrow-left me-2"></i>Volver
+              </button>
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" (click)="onEdit()">
+                  <i class="fas fa-edit me-2"></i>Editar
+                </button>
+                <button type="button" class="btn btn-outline-danger" (click)="onDelete()">
+                  <i class="fas fa-trash me-2"></i>Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Info Panel -->
+        <div class="col-lg-2">
+          <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <i class="fas fa-key fa-3x text-primary opacity-50"></i>
+              </div>
+              <h6 class="text-uppercase text-muted small fw-bold">Estado</h6>
+              <div class="badge bg-success px-3 py-2">Activo</div>
+              <hr class="my-3">
+              <h6 class="text-uppercase text-muted small fw-bold">Tipo</h6>
+              <p class="small text-dark">Permiso de Sistema</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && !permission" class="row">
+        <div class="col-lg-8 offset-lg-2">
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>No disponible</strong> - No se pudieron cargar los detalles del permiso. Por favor, intente nuevamente.
+            <button type="button" class="btn-close" title="Cerrar" (click)="onCancel()"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

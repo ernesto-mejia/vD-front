@@ -1,0 +1,143 @@
+<div class="mb-10">
+  <ul class="navbar-nav me-auto">
+    <!-- Inicio -->
+    <li
+      class="nav-item dropdown ms-lg-auto"
+      [ngClass]="{ active: activeSection === 'inicio' }"
+    >
+      <a
+        class="nav-link dropdown-toggle text-primary"
+        href="dashboard"
+        (click)="setActiveSection('inicio')"
+      >
+        <i class="fa fa-home me-1" aria-hidden="true"></i> Inicio
+      </a>
+      <hr class="dropdown-divider" />
+
+      <!-- brought user to home, to reduce options on top-->
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <a>
+            <span class="dropdown-item-text text-primary"
+              ><small
+                ><i class="fa fa-user-circle me-1" aria-hidden="true"></i>
+                {{ this.xuser_name }}
+              </small></span
+            >
+          </a>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+          <span class="dropdown-item-text text-primary"
+            ><small>Versión: 0.0.0.1</small></span
+          >
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+          <a
+            class="dropdown-item text-primary"
+            style="cursor: pointer"
+            (click)="logout()"
+          >
+            <i class="fa fa-sign-out me-1" aria-hidden="true"></i> Salir
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Parámetros - Solo visible si el usuario tiene permisos de usuarios, roles o permisos -->
+    <li
+      class="nav-item dropdown"
+      *ngIf="
+        parameters_users ||
+        parameters_roles ||
+        parameters_permissions ||
+        parameters_taxes
+      "
+      [ngClass]="{ active: activeSection === 'parametros' }"
+    >
+      <a
+        class="nav-link dropdown-toggle text-primary"
+        role="button"
+        (click)="toggleDropdown('parametros', $event)"
+        [attr.aria-expanded]="isDropdownOpen('parametros')"
+      >
+        <i class="fa fa-cog me-1" aria-hidden="true"></i> Parámetros
+      </a>
+      <ul class="dropdown-menu" [class.show]="isDropdownOpen('parametros')">
+        <li *ngIf="parameters_users">
+          <a
+            class="dropdown-item text-primary"
+            href="users/list"
+            [ngClass]="{ active: activeSection === 'usuarios' }"
+            (click)="setActiveSubSection('parameters', 'users')"
+            >Usuarios</a
+          >
+        </li>
+        <li *ngIf="parameters_roles">
+          <a
+            class="dropdown-item text-primary"
+            href="roles/list"
+            [ngClass]="{ active: activeSection === 'roles' }"
+            (click)="setActiveSubSection('parameters', 'roles')"
+            >Roles
+          </a>
+        </li>
+        <li *ngIf="parameters_permissions">
+          <a
+            class="dropdown-item text-primary"
+            href="permissions/list"
+            [ngClass]="{ active: activeSection === 'permissions' }"
+            (click)="setActiveSubSection('parameters', 'permissions')"
+            >Permisos
+          </a>
+        </li>
+        <li>
+          <a
+            class="dropdown-item text-primary"
+            href="parameters/communication/email-configuration"
+            [ngClass]="{ active: activeSection === 'emailConfig' }"
+            (click)="setActiveSubSection('parameters', 'emailConfig')"
+            >Configuración de Email</a
+          >
+        </li>
+        <li>
+          <a class="dropdown-item text-primary"
+            href="parameters/communication/announcements"
+            [ngClass]="{ active: activeSection === 'announcements' }"
+            (click)="setActiveSubSection('parameters', 'announcements')"
+            >Anuncios Internos</a
+          >
+        </li>
+        <li>
+          <a
+            class="dropdown-item text-primary"
+            href="parameters/communication/chat"
+            [ngClass]="{'active': activeSection === 'chatInterno'}"
+            (click)="setActiveSubSection('parameters','chatInterno')"
+          >Chat Interno</a>
+        </li>
+        <li>
+          <a
+            class="dropdown-item text-primary"
+            href="notifications/list"
+            [ngClass]="{ active: activeSection === 'notificationsParameters' }"
+            (click)="
+              setActiveSubSection('parameters', 'notificationsParameters')
+            "
+            >Notificaciones</a
+          >
+        </li>
+        <li>
+          <a
+            class="dropdown-item text-primary"
+            href="logs/list"
+            [ngClass]="{ active: activeSection === 'logsActions' }"
+            (click)="setActiveSubSection('parameters', 'logsActions')"
+            >Log de Acciones</a
+          >
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,68 @@
+<section class="vh-100 bg-light">
+  <div class="container h-100">
+    <div class="row justify-content-center align-items-center h-100">
+      <div class="col-md-8 col-lg-6 col-xl-5">
+        <!-- Tarjeta de Login -->
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-5">
+            <!-- Logo y Título -->
+            <div class="text-center mb-5">
+              <img src="media/logo.png" alt="Logo" class="mb-4" style="height: 70px;">
+              <h3 class="h4 text-gray-900 mb-1">Bienvenido a EPICA</h3>
+              <small class="text-muted">Versión 0.995 </small>
+            </div>
+
+            <!-- Formulario -->
+            <form>
+              <!-- Campo Usuario -->
+              <div class="mb-4">
+                <label for="username" class="form-label fw-semibold">Usuario</label>
+                <div class="input-group shadow-sm rounded-3 border border-2 border-primary-subtle">
+                  <input name="userName" [(ngModel)]="userLogin.userName"
+                    id="username" class="form-control form-control-lg border-0 bg-light"
+                    placeholder="Ingrese su usuario" required autocomplete="username">
+                  <span class="input-group-text bg-white border-0">
+                    <i class="fas fa-user text-primary"></i>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Campo Contraseña -->
+              <div class="mb-4">
+                <label for="password" class="form-label fw-semibold">Contraseña</label>
+                <div class="input-group shadow-sm rounded-3 border border-2 border-primary-subtle">
+                  <input name="password" [(ngModel)]="userLogin.password"
+                    [type]="passwordVisible ? 'text' : 'password'"
+                    id="password" class="form-control form-control-lg border-0 bg-light"
+                    placeholder="Ingrese su contraseña" required autocomplete="current-password">
+                  <span class="input-group-text bg-white border-0" style="cursor: pointer;" (click)="onPasswordVisibilityToggle()">
+                    <i [class]="passwordVisible ? 'fa-solid fa-eye text-primary' : 'fa-solid fa-eye-slash text-primary'"></i>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Botón de Login -->
+              <div class="d-grid gap-2 mt-4">
+                <button (click)="onLogin()" class="btn btn-primary btn-lg py-3 fw-semibold shadow-sm" type="submit">
+                  <i class="fas fa-sign-in-alt me-2"></i> Iniciar sesión
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Footer -->
+          <div class="card-footer bg-white border-0 text-center py-3 rounded-bottom-3 shadow-sm">
+            <small class="text-muted">
+              <span class="d-block mb-1">
+                <i class="fas fa-copyright me-1"></i>2025
+                <span class="fw-bold text-primary">EPICA</span>
+                <span class="text-secondary">| versión 0.995</span>
+              </span>
+               <span class="d-block">Todos los derechos reservados.</span>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

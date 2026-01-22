@@ -1,0 +1,43 @@
+<div >
+  <div>
+    <app-sidebar></app-sidebar>
+  </div>
+  <div class="p-5">
+    <div class="container mt-4">
+      <h2>Editar Prueba</h2>
+      <form (ngSubmit)="onSubmit()" #testForm="ngForm" class="w-100 p-3">
+        <div class="row mb-3 w-100 d-flex">
+          <div class="form-group col-md-6 mb-2">
+            <label for="nombrePrueba">Nombre de la Prueba</label>
+            <input type="text" class="form-control" id="nombrePrueba" required [(ngModel)]="test.nombrePrueba" name="nombrePrueba">
+          </div>
+          <div class="form-group col-md-6 mb-2">
+            <label for="claveEstudio">Clave del Estudio</label>
+            <input type="text" class="form-control" id="claveEstudio" required [(ngModel)]="test.claveEstudio" name="claveEstudio">
+          </div>
+          <div class="form-group col-md-6 mb-2">
+            <label for="claveSat">Clave SAT</label>
+            <input type="text" class="form-control" id="claveSat" required [(ngModel)]="test.claveSat" name="claveSat">
+          </div>
+          <div class="form-group col-md-6 mb-2">
+            <label for="status">Status</label>
+            <select class="form-control" id="status" required [(ngModel)]="test.status" name="status">
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6 mb-2">
+            <label for="descripcion">Descripción</label>
+            <textarea class="form-control" id="descripcion" required [(ngModel)]="test.descripcion" name="descripcion"></textarea>
+          </div>
+          <div class="form-group col-md-6 mb-2">
+            <label for="claveInterna">Clave Interna</label>
+            <input type="text" class="form-control" id="claveInterna" required [(ngModel)]="test.claveInterna" name="claveInterna">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" (click)="goBack()">Cancelar</button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,342 @@
+<app-sidebar></app-sidebar>
+<main class="main-content">
+  <div class="container-fluid py-4">
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando solicitud...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error && !loading" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+      <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadPurchaseRequest()">
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Content -->
+    <ng-container *ngIf="purchaseRequest && !loading">
+      <!-- Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div class="d-flex align-items-center">
+              <button class="btn btn-link text-muted p-0 me-3" (click)="goBack()">
+                <i class="bi bi-arrow-left fs-5"></i>
+              </button>
+              <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <h4 class="mb-0">{{ purchaseRequest.request_number || purchaseRequest.folio || 'Sin Folio' }}</h4>
+                  <span class="badge" [style.backgroundColor]="purchaseRequest.status?.color">
+                    <i *ngIf="purchaseRequest.status?.icon" [class]="purchaseRequest.status?.icon + ' me-1'"></i>
+                    {{ purchaseRequest.status?.name }}
+                  </span>
+                  <span class="badge" [class]="'bg-' + getPriorityColor(purchaseRequest.priority)">
+                    <i [class]="getPriorityIcon(purchaseRequest.priority) + ' me-1'"></i>
+                    {{ getPriorityLabel(purchaseRequest.priority) }}
+                  </span>
+                </div>
+                <p class="text-muted mb-0">{{ purchaseRequest.description }}</p>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 flex-wrap">
+              <!-- Export Buttons -->
+              <div class="btn-group" *ngIf="canExport()">
+                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" [disabled]="loadingExport">
+                  <span *ngIf="loadingExport" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!loadingExport" class="bi bi-file-earmark-pdf me-1"></i>Exportar
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item" href="javascript:void(0)" (click)="exportToPdf()">
+                      <i class="bi bi-file-earmark-text me-2"></i>Solicitud de Compra
+                    </a>
+                  </li>
+                  <li *ngIf="canGeneratePO()">
+                    <a class="dropdown-item" href="javascript:void(0)" (click)="exportPurchaseOrderPdf()">
+                      <i class="bi bi-file-earmark-check me-2"></i>Orden de Compra
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <button *ngIf="canEdit()" class="btn btn-outline-primary" (click)="editRequest()" [disabled]="loadingAction">
+                <i class="bi bi-pencil me-1"></i>Editar
+              </button>
+              <button *ngIf="canSubmit()" class="btn btn-success" (click)="submitRequest()" [disabled]="loadingAction">
+                <span *ngIf="loadingAction" class="spinner-border spinner-border-sm me-1"></span>
+                <i *ngIf="!loadingAction" class="bi bi-send me-1"></i>Enviar
+              </button>
+              <button *ngIf="canApprove()" class="btn btn-success" (click)="approveRequest()" [disabled]="loadingAction">
+                <i class="bi bi-check-lg me-1"></i>Aprobar
+              </button>
+              <button *ngIf="canApprove()" class="btn btn-warning" (click)="returnRequest()" [disabled]="loadingAction">
+                <i class="bi bi-arrow-return-left me-1"></i>Devolver
+              </button>
+              <button *ngIf="canApprove()" class="btn btn-danger" (click)="rejectRequest()" [disabled]="loadingAction">
+                <i class="bi bi-x-lg me-1"></i>Rechazar
+              </button>
+              <button *ngIf="canCancel()" class="btn btn-outline-danger" (click)="cancelRequest()" [disabled]="loadingAction">
+                <i class="bi bi-slash-circle me-1"></i>Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'details'" (click)="activeTab = 'details'" style="cursor: pointer;">
+            <i class="bi bi-info-circle me-1"></i>Detalles
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'items'" (click)="activeTab = 'items'" style="cursor: pointer;">
+            <i class="bi bi-box-seam me-1"></i>Artículos
+            <span class="badge bg-secondary ms-1">{{ purchaseRequest.items?.length || 0 }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'" style="cursor: pointer;">
+            <i class="bi bi-clock-history me-1"></i>Historial
+          </a>
+        </li>
+      </ul>
+
+      <!-- Tab Content: Details -->
+      <div *ngIf="activeTab === 'details'" class="row">
+        <div class="col-lg-8">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-transparent">
+              <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información General</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="small text-muted">Proveedor</label>
+                  <div class="d-flex align-items-center mt-1">
+                    <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
+                      <i class="bi bi-building text-muted"></i>
+                    </div>
+                    <div>
+                      <!-- Si hay proveedores en los items del contrato -->
+                      <ng-container *ngIf="getItemProviders().length > 0; else noProviders">
+                        <div *ngFor="let prov of getItemProviders()" class="fw-semibold">
+                          <i class="bi bi-truck text-primary me-1"></i>{{ prov }}
+                        </div>
+                      </ng-container>
+                      <ng-template #noProviders>
+                        <div class="fw-semibold">{{ purchaseRequest.provider?.name || purchaseRequest.provider?.company || 'Sin proveedor' }}</div>
+                        <small class="text-muted">{{ purchaseRequest.provider?.rfc || '' }}</small>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="small text-muted">Solicitante</label>
+                  <div class="d-flex align-items-center mt-1">
+                    <div class="avatar-sm bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center me-2">
+                      <i class="bi bi-person text-primary"></i>
+                    </div>
+                    <div>
+                      <div class="fw-semibold">{{ purchaseRequest.requester?.name || '-' }}</div>
+                      <small class="text-muted">{{ purchaseRequest.requester?.email || '' }}</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="small text-muted">Fecha Requerida</label>
+                  <div class="fw-medium">{{ formatDate(purchaseRequest.required_date) }}</div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="small text-muted">Fecha de Creación</label>
+                  <div class="fw-medium">{{ formatDateTime(purchaseRequest.created_at) }}</div>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="small text-muted">Última Actualización</label>
+                  <div class="fw-medium">{{ formatDateTime(purchaseRequest.updated_at) }}</div>
+                </div>
+
+                <div class="col-12" *ngIf="purchaseRequest.delivery_address">
+                  <label class="small text-muted">Dirección de Entrega</label>
+                  <div class="fw-medium">
+                    <i class="bi bi-geo-alt me-1 text-muted"></i>
+                    {{ purchaseRequest.delivery_address.street }},
+                    {{ purchaseRequest.delivery_address.city }},
+                    {{ purchaseRequest.delivery_address.state }}
+                  </div>
+                </div>
+
+                <div class="col-12" *ngIf="purchaseRequest.notes || purchaseRequest.internal_notes">
+                  <label class="small text-muted">Notas</label>
+                  <div class="bg-light rounded p-3 mt-1">
+                    {{ purchaseRequest.notes || purchaseRequest.internal_notes }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar: Totals -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+              <h6 class="mb-0"><i class="bi bi-calculator me-2"></i>Resumen Financiero</h6>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Subtotal:</span>
+                <span class="fw-semibold">{{ formatCurrency(purchaseRequest.subtotal) }}</span>
+              </div>
+
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">IVA:</span>
+                <span class="text-success">+ {{ formatCurrency(purchaseRequest.iva || purchaseRequest.vat_amount) }}</span>
+              </div>
+
+              <div *ngIf="(purchaseRequest.isr || 0) > 0" class="d-flex justify-content-between mb-2">
+                <span class="text-muted">ISR:</span>
+                <span class="text-success">+ {{ formatCurrency(purchaseRequest.isr) }}</span>
+              </div>
+
+              <div *ngIf="(purchaseRequest.iva_retention || purchaseRequest.vat_retention_amount || 0) > 0" class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Ret. IVA:</span>
+                <span class="text-danger">- {{ formatCurrency(purchaseRequest.iva_retention || purchaseRequest.vat_retention_amount) }}</span>
+              </div>
+
+              <div *ngIf="(purchaseRequest.isr_retention || purchaseRequest.isr_retention_amount || 0) > 0" class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Ret. ISR:</span>
+                <span class="text-danger">- {{ formatCurrency(purchaseRequest.isr_retention || purchaseRequest.isr_retention_amount) }}</span>
+              </div>
+
+              <hr>
+
+              <div class="d-flex justify-content-between">
+                <span class="fw-bold fs-5">Total:</span>
+                <span class="fw-bold fs-5 text-primary">{{ formatCurrency(purchaseRequest.total) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approval Info -->
+          <div *ngIf="purchaseRequest.approved_by" class="card shadow-sm border-success">
+            <div class="card-body">
+              <h6 class="text-success mb-3"><i class="bi bi-check-circle me-2"></i>Aprobación</h6>
+              <div class="d-flex align-items-center mb-2">
+                <div class="avatar-sm bg-success-subtle rounded-circle d-flex align-items-center justify-content-center me-2">
+                  <i class="bi bi-person-check text-success"></i>
+                </div>
+                <div>
+                  <div class="fw-semibold">{{ purchaseRequest.approved_by.name || 'Usuario' }}</div>
+                  <small class="text-muted">{{ formatDateTime(purchaseRequest.approved_at) }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Items -->
+      <div *ngIf="activeTab === 'items'">
+        <div class="card shadow-sm">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">#</th>
+                  <th>Artículo</th>
+                  <th>Proveedor</th>
+                  <th class="text-center">Cantidad</th>
+                  <th>Unidad</th>
+                  <th class="text-end pe-3">Notas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of purchaseRequest.items; let i = index" class="align-middle">
+                  <td class="ps-3">{{ i + 1 }}</td>
+                  <td>
+                    <div class="fw-medium">{{ item.item?.name || item.item_name || '-' }}</div>
+                    <small *ngIf="item.item_description" class="text-muted d-block">{{ item.item_description }}</small>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="item.provider_name; else noItemProvider">
+                      <span class="badge bg-primary">
+                        <i class="bi bi-truck me-1"></i>{{ item.provider_name }}
+                      </span>
+                      <small class="d-block text-muted" *ngIf="item.contract_price">
+                        Precio contrato: {{ formatCurrency(item.contract_price) }}
+                      </small>
+                    </ng-container>
+                    <ng-template #noItemProvider>
+                      <span class="text-muted">-</span>
+                    </ng-template>
+                  </td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td>{{ item.unit || item.unit_of_measurement || 'pza' }}</td>
+                  <td class="text-end pe-3">
+                    <small class="text-muted">{{ item.notes || '-' }}</small>
+                  </td>
+                </tr>
+
+                <tr *ngIf="!purchaseRequest.items?.length">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    No hay artículos en esta solicitud
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: History -->
+      <div *ngIf="activeTab === 'history'">
+        <div class="card shadow-sm">
+          <div class="card-header bg-transparent">
+            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historial de Acciones</h6>
+          </div>
+          <div class="card-body">
+            <div *ngIf="loadingHistory" class="text-center py-4">
+              <div class="spinner-border spinner-border-sm text-primary"></div>
+              <span class="ms-2 text-muted">Cargando historial...</span>
+            </div>
+
+            <div *ngIf="!loadingHistory && history.length === 0" class="text-center py-4 text-muted">
+              <i class="bi bi-clock-history display-6"></i>
+              <p class="mt-2">No hay historial disponible</p>
+            </div>
+
+            <div *ngIf="!loadingHistory && history.length > 0" class="timeline">
+              <div *ngFor="let approval of history; let last = last" class="timeline-item" [class.last]="last">
+                <div class="timeline-marker">
+                  <i [class]="getActionIcon(approval.action)"></i>
+                </div>
+                <div class="timeline-content">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <span class="fw-semibold">{{ getActionLabel(approval.action) }}</span>
+                      <span class="text-muted ms-2">por {{ approval.user?.name }}</span>
+                    </div>
+                    <small class="text-muted">{{ formatDateTime(approval.created_at) }}</small>
+                  </div>
+                  <p *ngIf="approval.notes || approval.comments" class="text-muted small mt-1 mb-0">{{ approval.notes || approval.comments }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</main>

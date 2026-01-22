@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "public": "dist/angular_18_login_with_local_storage/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ]
+  }
+}

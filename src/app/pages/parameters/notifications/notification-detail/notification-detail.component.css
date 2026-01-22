@@ -1,0 +1,25 @@
+.badge { margin-right: 6px; }
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 60px);
+}
+
+.content {
+  flex: 1;
+  padding-top: 20px;
+}
+
+.container {
+  padding-top: 10px;
+}
+
+/* Header con gradiente */
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-header h5 {
+  font-weight: 600;
+  margin: 0;
+}

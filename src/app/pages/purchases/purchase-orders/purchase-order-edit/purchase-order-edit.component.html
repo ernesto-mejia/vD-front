@@ -1,0 +1,333 @@
+<app-sidebar></app-sidebar>
+<main class="main-content">
+<div class="container-fluid py-4">
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && order">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a routerLink="/purchases/purchase-orders/list">Órdenes de Compra</a></li>
+            <li class="breadcrumb-item"><a [routerLink]="['/purchases/purchase-orders/show', orderId]">{{ order.order_number }}</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+          </ol>
+        </nav>
+        <h1 class="h3 mb-0">
+          <i class="bi bi-pencil me-2"></i>Editar Orden {{ order.order_number }}
+        </h1>
+      </div>
+      <span class="badge bg-{{ order.status?.color }} fs-6">{{ order.status?.name }}</span>
+    </div>
+
+    <form (ngSubmit)="save()">
+      <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+          <!-- Basic Information -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-info-circle me-2"></i>Información General
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Proveedor</label>
+                  <input type="text" class="form-control" [value]="order.provider?.company" disabled>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Fecha de Orden</label>
+                  <input type="text" class="form-control" [value]="order.order_date" disabled>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Título <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" [(ngModel)]="formData.title" name="title" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Fecha de Entrega Esperada</label>
+                  <input type="date" class="form-control" [(ngModel)]="formData.expected_delivery_date" name="expected_delivery_date">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Prioridad</label>
+                  <select class="form-select" [(ngModel)]="formData.priority" name="priority">
+                    <option *ngFor="let p of priorities" [ngValue]="p.value">{{ p.label }}</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Descripción</label>
+                  <textarea class="form-control" [(ngModel)]="formData.description" name="description" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-list-ul me-2"></i>Artículos
+              </h5>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="addItem()">
+                <i class="bi bi-plus-lg me-1"></i>Agregar
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Descripción</th>
+                      <th style="width: 180px;">Proveedor</th>
+                      <th style="width: 100px;">Cantidad</th>
+                      <th style="width: 80px;">UOM</th>
+                      <th style="width: 130px;">Precio</th>
+                      <th style="width: 90px;">Desc. %</th>
+                      <th style="width: 130px;" class="text-end">Subtotal</th>
+                      <th style="width: 80px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of formData.items; let i = index">
+                      <td class="text-muted">{{ i + 1 }}</td>
+                      <td>
+                        <input type="text" class="form-control form-control-sm"
+                               [(ngModel)]="item.item_name" [name]="'item_name_' + i" required
+                               (ngModelChange)="onItemChange()">
+                      </td>
+                      <td>
+                        <!-- Cargando proveedores globales -->
+                        <ng-container *ngIf="loadingProviders">
+                          <span class="text-muted small">
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                          </span>
+                        </ng-container>
+
+                        <ng-container *ngIf="!loadingProviders">
+                          <!-- Selector de proveedor por item del catálogo -->
+                          <ng-container *ngIf="item.item_id">
+                            <!-- Cargando proveedores específicos del item -->
+                            <span *ngIf="isLoadingItemProviders(i)" class="text-muted small">
+                              <span class="spinner-border spinner-border-sm me-1"></span>
+                            </span>
+
+                            <!-- Item con proveedores del catálogo -->
+                            <select *ngIf="!isLoadingItemProviders(i) && hasItemProviders(i)"
+                                    class="form-select form-select-sm"
+                                    [(ngModel)]="item.provider_id"
+                                    [name]="'provider_' + i"
+                                    (ngModelChange)="onItemProviderChange(i)"
+                                    [class.is-invalid]="!item.provider_id"
+                                    title="Seleccione proveedor">
+                              <option [ngValue]="null">Seleccione...</option>
+                              <option *ngFor="let supplier of getItemProviders(i)" [ngValue]="supplier.id">
+                                {{ supplier.name }} {{ supplier.price ? '($' + supplier.price + ')' : '' }}
+                              </option>
+                            </select>
+
+                            <!-- Sin proveedores en catálogo - Mostrar select global -->
+                            <select *ngIf="!isLoadingItemProviders(i) && !hasItemProviders(i)"
+                                    class="form-select form-select-sm"
+                                    [(ngModel)]="item.provider_id"
+                                    [name]="'provider_global_' + i"
+                                    (ngModelChange)="onGlobalProviderChange(i)"
+                                    [class.is-invalid]="!item.provider_id"
+                                    title="Seleccione proveedor">
+                              <option [ngValue]="null">Seleccione proveedor...</option>
+                              <option *ngFor="let provider of allProviders" [ngValue]="provider.id">
+                                {{ provider.name }}
+                              </option>
+                            </select>
+                          </ng-container>
+
+                          <!-- Item sin catálogo (manual) - Mostrar select global -->
+                          <select *ngIf="!item.item_id"
+                                  class="form-select form-select-sm"
+                                  [(ngModel)]="item.provider_id"
+                                  [name]="'provider_manual_' + i"
+                                  (ngModelChange)="onGlobalProviderChange(i)"
+                                  [class.is-invalid]="!item.provider_id"
+                                  title="Seleccione proveedor">
+                            <option [ngValue]="null">Seleccione proveedor...</option>
+                            <option *ngFor="let provider of allProviders" [ngValue]="provider.id">
+                              {{ provider.name }}
+                            </option>
+                          </select>
+                        </ng-container>
+                      </td>
+                      <td>
+                        <input type="number" class="form-control form-control-sm"
+                               [(ngModel)]="item.quantity_ordered" [name]="'qty_' + i"
+                               min="0.0001" step="0.0001" required
+                               (ngModelChange)="onItemChange()">
+                      </td>
+                      <td>
+                        <input type="text" class="form-control form-control-sm"
+                               [(ngModel)]="item.unit_of_measurement" [name]="'uom_' + i">
+                      </td>
+                      <td>
+                        <input type="number" class="form-control form-control-sm"
+                               [(ngModel)]="item.unit_price" [name]="'price_' + i"
+                               min="0" step="0.01" required
+                               (ngModelChange)="onItemChange()">
+                      </td>
+                      <td>
+                        <input type="number" class="form-control form-control-sm"
+                               [(ngModel)]="item.discount_percent" [name]="'disc_' + i"
+                               min="0" max="100" step="0.01"
+                               (ngModelChange)="onItemChange()">
+                      </td>
+                      <td class="text-end fw-medium">
+                        {{ formatCurrency(getItemLineSubtotal(item)) }}
+                      </td>
+                      <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                          <button type="button" class="btn btn-outline-secondary" (click)="duplicateItem(i)">
+                            <i class="bi bi-copy"></i>
+                          </button>
+                          <button type="button" class="btn btn-outline-danger" (click)="removeItem(i)"
+                                  [disabled]="formData.items?.length === 1">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment & Shipping -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-truck me-2"></i>Pago y Envío
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Método de Pago</label>
+                  <select class="form-select" [(ngModel)]="formData.payment_method" name="payment_method">
+                    <option *ngFor="let m of paymentMethods" [ngValue]="m.value">{{ m.label }}</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Términos de Pago</label>
+                  <input type="text" class="form-control" [(ngModel)]="formData.payment_terms" name="payment_terms">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Costo de Envío</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="formData.shipping_cost" name="shipping_cost"
+                           min="0" step="0.01" (ngModelChange)="calculateTotals()">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-sticky me-2"></i>Notas
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Notas para el Proveedor</label>
+                  <textarea class="form-control" [(ngModel)]="formData.vendor_notes" name="vendor_notes" rows="3"></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Notas Internas</label>
+                  <textarea class="form-control" [(ngModel)]="formData.internal_notes" name="internal_notes" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <!-- Totals -->
+          <div class="card shadow-sm mb-4 border-primary">
+            <div class="card-header bg-primary bg-opacity-10">
+              <h6 class="card-title mb-0">
+                <i class="bi bi-receipt me-2"></i>Resumen
+              </h6>
+            </div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Subtotal:</span>
+                <span>{{ formatCurrency(totals.subtotal) }}</span>
+              </div>
+              <div *ngIf="totals.discount_amount > 0" class="d-flex justify-content-between mb-2 text-success">
+                <span>Descuento:</span>
+                <span>-{{ formatCurrency(totals.discount_amount) }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">IVA ({{ totals.tax_rates.vat_rate }}%):</span>
+                <span>{{ formatCurrency(totals.vat_amount) }}</span>
+              </div>
+              <div *ngIf="totals.vat_retention_amount > 0" class="d-flex justify-content-between mb-2 text-danger">
+                <span>Ret. IVA:</span>
+                <span>-{{ formatCurrency(totals.vat_retention_amount) }}</span>
+              </div>
+              <div *ngIf="totals.isr_retention_amount > 0" class="d-flex justify-content-between mb-2 text-danger">
+                <span>Ret. ISR:</span>
+                <span>-{{ formatCurrency(totals.isr_retention_amount) }}</span>
+              </div>
+              <div *ngIf="totals.shipping_cost > 0" class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Envío:</span>
+                <span>{{ formatCurrency(totals.shipping_cost) }}</span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between">
+                <span class="fw-bold fs-5">Total:</span>
+                <span class="fw-bold fs-5 text-primary">{{ formatCurrency(totals.total) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card shadow-sm sticky-top" style="top: 1rem;">
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary" [disabled]="saving || !isFormValid()">
+                  <i class="bi bi-save me-2"></i>
+                  {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+
+                <!-- Botón Enviar a Autorización (solo si está en borrador o proveedores asignados) -->
+                <button *ngIf="canSubmitForAuth()"
+                        type="button"
+                        class="btn btn-success"
+                        [disabled]="saving"
+                        (click)="submitForAuthorization()">
+                  <i class="bi bi-send me-2"></i>Enviar a Autorización OC
+                </button>
+
+                <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+                  <i class="bi bi-x-lg me-2"></i>Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+</main>

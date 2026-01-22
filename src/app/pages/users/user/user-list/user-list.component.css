@@ -1,0 +1,19 @@
+#addPatientBtn {
+  position: absolute;
+  z-index: 999;
+}
+.dataTables_filter {
+  text-align: center;
+}
+
+.dataTables_filter label {
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+}
+
+.dataTables_filter input {
+  width: 200px; /* Ajusta el ancho según tu preferencia */
+  max-width: 300px;
+}
+

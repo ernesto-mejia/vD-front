@@ -1,0 +1,304 @@
+.table-contracts th,
+.table-contracts td {
+  white-space: normal;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.table-contracts td.text-wrap {
+  max-width: 300px;
+}
+
+.table-contracts th {
+  font-weight: bold;
+}
+
+.table-contracts {
+  table-layout: fixed;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.field-label {
+  font-weight: bold;
+  color: #495057;
+}
+
+.field-value {
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  color: #0d6efd;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Truncado de texto con elipsis */
+.obs-truncate-200 {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.obs-truncate-250 {
+  max-width: 250px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Estilos para tarjetas de contactos y direcciones */
+.contact-card,
+.address-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e9ecef;
+}
+
+.contact-card:hover,
+.address-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.contact-card .card-header,
+.address-card .card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Estilos para estados vacíos */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.text-muted i {
+  opacity: 0.5;
+}
+
+/* Mejoras responsive */
+@media (max-width: 768px) {
+  .col-lg-6 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Badges en tabs mejorados */
+.nav-tabs .badge {
+  font-size: 0.7em;
+  margin-left: 4px;
+}
+
+/* Campos más compactos para tarjetas */
+.field-label.small {
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.field-value.small {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Estilos adicionales para formularios en modo edición */
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estilos para campos requeridos */
+.text-danger {
+  font-weight: bold;
+}
+
+/* Estilos para validación */
+.is-invalid {
+  border-color: #dc3545;
+}
+
+.invalid-feedback {
+  display: block;
+  font-size: 0.875rem;
+}
+
+/* Estilos para switches de compliance */
+.compliance-switch .form-check-input {
+  width: 2.5rem;
+  height: 1.25rem;
+  margin-right: 0;
+}
+
+.compliance-switch .form-check-input:checked {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.compliance-switch .form-check-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.compliance-switch .form-check-label {
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+/* Responsive para switches */
+@media (max-width: 768px) {
+  .compliance-switch .form-check-input {
+    width: 2.2rem;
+    height: 1.1rem;
+  }
+
+  .col-md-4.mb-3 {
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* Estilos para badges de estado */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+}
+
+.bg-success {
+  background-color: #198754 !important;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+/* Estilos para modales */
+.modal-header.bg-primary {
+  background-color: #0d6efd !important;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Estilos para la navegación entre tabs */
+.nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+  font-weight: 500;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  transition: color 0.1s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  border: none;
+  color: #0d6efd;
+  background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #fff;
+  border-bottom: 3px solid #0d6efd;
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+/* Estilos para el textarea de dirección */
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Estilos para el contenedor de cards */
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Estilos para headers de cards internas */
+.card .card-header {
+  padding: 0.75rem 1rem;
+}
+
+/* Estados de hover para botones */
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Estilos para el focus en elementos interactivos */
+.btn:focus,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estilos para el placeholder de campos */
+::placeholder {
+  color: #6c757d !important;
+  opacity: 0.7;
+}
+
+/* Estilos para campos de solo lectura */
+.form-control[readonly] {
+  background-color: #e9ecef;
+  opacity: 1;
+}
+
+/* Responsive design */
+@media (max-width: 576px) {
+  .nav-tabs .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .card-header h5 {
+    font-size: 1.1rem;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+/* Contenedor principal */
+.container {
+  max-width: 1200px;
+}
+

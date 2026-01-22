@@ -1,0 +1,59 @@
+<div >
+    <div class="col-2">
+      <app-sidebar></app-sidebar>
+    </div>
+    <div class="p-5">
+      <div class="container mt-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Información de la Prueba</h5>
+          </div>
+          <div class="card-body">
+            <!-- Mostrar datos si existen, o un mensaje de carga -->
+            <div *ngIf="test; else loading">
+              <div class="row">
+                <!-- Columna izquierda -->
+                <div class="col-md-6">
+                  <h6 class="text-muted">Detalles de la Prueba</h6>
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                      <strong>Nombre de la Prueba:</strong> {{ test.nombrePrueba }}
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Clave del Estudio:</strong> {{ test.claveEstudio }}
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Clave SAT:</strong> {{ test.claveSat }}
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Status:</strong> {{ test.status }}
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Descripción:</strong> {{ test.descripcion }}
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Clave Interna:</strong> {{ test.claveInterna }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <!-- Plantilla para el estado de carga -->
+            <ng-template #loading>
+              <div class="text-center">
+                <p class="text-muted">Cargando información de la prueba...</p>
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="card-footer">
+            <button class="btn btn-warning text-start" (click)="editTest()">Editar</button>
+            <button class="btn btn-secondary text-end" (click)="goBack()">Regresar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

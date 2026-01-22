@@ -1,0 +1,372 @@
+<div>
+  <app-sidebar></app-sidebar>
+</div>
+
+<main id="content" class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a routerLink="/parameters/taxes/rules">Reglas de Impuestos</a></li>
+          <li class="breadcrumb-item active">Nueva Regla</li>
+        </ol>
+      </nav>
+      <h2 class="mb-0">
+        <i class="fa fa-plus-circle me-2 text-success"></i>
+        Nueva Regla de Impuesto
+      </h2>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible">
+    <i class="fa fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null"></button>
+  </div>
+
+  <!-- Formulario -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <!-- Columna Principal -->
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fa fa-info-circle me-2"></i>Información General
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Nombre de la Regla <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="name"
+                       [class.is-invalid]="isFieldInvalid('name')"
+                       placeholder="Ej: Persona Física - Estándar con Retenciones">
+                <div class="invalid-feedback">{{ getFieldError('name') }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Código <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="text" class="form-control text-uppercase" formControlName="code"
+                         [class.is-invalid]="isFieldInvalid('code')"
+                         placeholder="PF-STD-RET">
+                  <button type="button" class="btn btn-outline-secondary" (click)="generateCode()" title="Generar código">
+                    <i class="fa fa-magic"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback">{{ getFieldError('code') }}</div>
+                <small class="text-muted">Solo mayúsculas, números y guiones</small>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Descripción</label>
+                <textarea class="form-control" formControlName="description" rows="2"
+                          placeholder="Descripción detallada de cuándo aplicar esta regla..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuración de Tasas -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fa fa-calculator me-2"></i>Configuración de Tasas
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <!-- Tipo de Aplicación -->
+              <div class="col-12">
+                <label class="form-label">Aplica a <span class="text-danger">*</span></label>
+                <div class="btn-group w-100" role="group">
+                  <input type="radio" class="btn-check" formControlName="applies_to" value="person" id="appliesPerson">
+                  <label class="btn btn-outline-primary" for="appliesPerson">
+                    <i class="fa fa-user me-1"></i>Solo Personas
+                  </label>
+                  <input type="radio" class="btn-check" formControlName="applies_to" value="item" id="appliesItem">
+                  <label class="btn btn-outline-success" for="appliesItem">
+                    <i class="fa fa-cube me-1"></i>Solo Items
+                  </label>
+                  <input type="radio" class="btn-check" formControlName="applies_to" value="both" id="appliesBoth">
+                  <label class="btn btn-outline-info" for="appliesBoth">
+                    <i class="fa fa-exchange me-1"></i>Ambos
+                  </label>
+                </div>
+                <small class="text-muted">Define si esta regla aplica a personas (clientes/proveedores), items (productos/servicios) o ambos</small>
+              </div>
+
+              <!-- Tipo de Persona (visible si applies_to != 'item') -->
+              <div class="col-md-6" *ngIf="form.get('applies_to')?.value !== 'item'">
+                <label class="form-label">Tipo de Persona <span class="text-danger">*</span></label>
+                <select class="form-select" formControlName="person_type">
+                  <option value="fisica">Persona Física (RFC 13 caracteres)</option>
+                  <option value="moral">Persona Moral (RFC 12 caracteres)</option>
+                </select>
+              </div>
+
+              <!-- Régimen Fiscal -->
+              <div class="col-md-6" *ngIf="form.get('applies_to')?.value !== 'item'">
+                <label class="form-label">Régimen Fiscal (Opcional)</label>
+                <select class="form-select" formControlName="tax_regime_id">
+                  <option [ngValue]="null">-- Aplica a todos los regímenes --</option>
+                  <option *ngFor="let regime of taxRegimes" [ngValue]="regime.id">
+                    {{ regime.sat_tax_regime_code }} - {{ regime.tax_regime }}
+                  </option>
+                </select>
+                <small class="text-muted">Si selecciona un régimen, la regla solo aplica a ese régimen específico</small>
+              </div>
+
+              <!-- Tipos de Item (visible si applies_to != 'person') -->
+              <div class="col-12" *ngIf="form.get('applies_to')?.value !== 'person'">
+                <label class="form-label">Tipos de Item</label>
+                <div class="row g-2">
+                  <div class="col-md-4" *ngFor="let itemType of itemTypeOptions">
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input"
+                             [id]="'itemType_' + itemType.value"
+                             [checked]="isItemTypeSelected(itemType.value)"
+                             (change)="onItemTypeChange(itemType.value, $event)">
+                      <label class="form-check-label" [for]="'itemType_' + itemType.value">
+                        {{ itemType.label }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <small class="text-muted">Si no selecciona ninguno, la regla aplicará a todos los tipos de items</small>
+              </div>
+
+              <!-- Código SAT del producto/servicio -->
+              <div class="col-md-6" *ngIf="form.get('applies_to')?.value !== 'person'">
+                <label class="form-label">Código SAT Producto/Servicio</label>
+                <input type="text" class="form-control" formControlName="sat_product_code"
+                       placeholder="Ej: 01010101" maxlength="10">
+                <small class="text-muted">ClaveProdServ del SAT al que aplica esta regla (opcional)</small>
+              </div>
+
+              <!-- IVA -->
+              <div class="col-12">
+                <hr class="my-2">
+                <h6 class="text-primary mb-3"><i class="fa fa-percent me-2"></i>IVA (Impuesto al Valor Agregado)</h6>
+              </div>
+
+              <!-- Zona fronteriza -->
+              <div class="col-md-4">
+                <label class="form-label">Zona Fronteriza</label>
+                <div class="form-check form-switch mt-2">
+                  <input type="checkbox" class="form-check-input" formControlName="is_border_zone" id="isBorderZone">
+                  <label class="form-check-label" for="isBorderZone">
+                    {{ form.get('is_border_zone')?.value ? 'Sí (8% IVA)' : 'No (16% IVA)' }}
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Tasa de IVA (%) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="vat_rate"
+                         [class.is-invalid]="isFieldInvalid('vat_rate')"
+                         min="0" max="100" step="0.01">
+                  <span class="input-group-text">%</span>
+                </div>
+                <div class="invalid-feedback">{{ getFieldError('vat_rate') }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">¿Aplica Retención IVA?</label>
+                <div class="form-check form-switch mt-2">
+                  <input type="checkbox" class="form-check-input" formControlName="vat_retention_applies" id="vatRetentionApplies">
+                  <label class="form-check-label" for="vatRetentionApplies">
+                    {{ form.get('vat_retention_applies')?.value ? 'Sí aplica' : 'No aplica' }}
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4" *ngIf="form.get('vat_retention_applies')?.value">
+                <label class="form-label">Tasa Retención IVA (%)</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="vat_retention_rate"
+                         min="0" max="100" step="0.0001">
+                  <span class="input-group-text">%</span>
+                </div>
+                <small class="text-muted">Estándar: 10.6667% (2/3 del IVA)</small>
+              </div>
+
+              <!-- ISR -->
+              <div class="col-12">
+                <hr class="my-2">
+                <h6 class="text-danger mb-3"><i class="fa fa-money me-2"></i>ISR (Impuesto Sobre la Renta)</h6>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">¿Aplica Retención ISR?</label>
+                <div class="form-check form-switch mt-2">
+                  <input type="checkbox" class="form-check-input" formControlName="isr_retention_applies" id="isrRetentionApplies">
+                  <label class="form-check-label" for="isrRetentionApplies">
+                    {{ form.get('isr_retention_applies')?.value ? 'Sí aplica' : 'No aplica' }}
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6" *ngIf="form.get('isr_retention_applies')?.value">
+                <label class="form-label">Tasa Retención ISR (%)</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="isr_retention_rate"
+                         min="0" max="100" step="0.01">
+                  <span class="input-group-text">%</span>
+                </div>
+                <small class="text-muted">Estándar: 10% para honorarios</small>
+              </div>
+
+              <!-- IEPS -->
+              <div class="col-12">
+                <hr class="my-2">
+                <h6 class="text-purple mb-3"><i class="fa fa-flask me-2"></i>IEPS (Impuesto Especial)</h6>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">¿Aplica IEPS?</label>
+                <div class="form-check form-switch mt-2">
+                  <input type="checkbox" class="form-check-input" formControlName="ieps_applies" id="iepsApplies">
+                  <label class="form-check-label" for="iepsApplies">
+                    {{ form.get('ieps_applies')?.value ? 'Sí aplica' : 'No aplica' }}
+                  </label>
+                </div>
+                <small class="text-muted">Impuesto especial para bebidas, tabacos, combustibles, etc.</small>
+              </div>
+              <div class="col-md-6" *ngIf="form.get('ieps_applies')?.value">
+                <label class="form-label">Tasa IEPS (%)</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" formControlName="ieps_rate"
+                         min="0" max="100" step="0.01">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Lateral -->
+      <div class="col-lg-4">
+        <!-- Opciones -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fa fa-cog me-2"></i>Opciones
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" formControlName="active" id="active">
+                <label class="form-check-label" for="active">
+                  <strong>Regla Activa</strong>
+                </label>
+              </div>
+              <small class="text-muted">Las reglas inactivas no se aplican automáticamente</small>
+            </div>
+
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" formControlName="is_default" id="isDefault">
+                <label class="form-check-label" for="isDefault">
+                  <strong>Regla por Defecto</strong>
+                </label>
+              </div>
+              <small class="text-muted">Se aplica cuando no hay regla específica para el régimen</small>
+            </div>
+
+            <div class="mb-0">
+              <label class="form-label">Prioridad</label>
+              <input type="number" class="form-control" formControlName="priority" min="0">
+              <small class="text-muted">Mayor número = mayor prioridad (se aplica primero)</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="card bg-light">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fa fa-eye me-2"></i>Vista Previa
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Aplica a -->
+            <p class="mb-2">
+              <strong>Aplica a:</strong>
+              <span class="badge"
+                    [class.bg-secondary]="form.get('applies_to')?.value === 'person'"
+                    [class.bg-success]="form.get('applies_to')?.value === 'item'"
+                    [class.bg-info]="form.get('applies_to')?.value === 'both'">
+                {{ form.get('applies_to')?.value === 'person' ? 'Personas' :
+                   form.get('applies_to')?.value === 'item' ? 'Items' : 'Ambos' }}
+              </span>
+            </p>
+
+            <!-- Tipo de persona -->
+            <p class="mb-2" *ngIf="form.get('applies_to')?.value !== 'item'">
+              <strong>Tipo:</strong>
+              <span class="badge" [class.bg-info]="form.get('person_type')?.value === 'fisica'"
+                    [class.bg-primary]="form.get('person_type')?.value === 'moral'">
+                {{ form.get('person_type')?.value === 'fisica' ? 'Persona Física' : 'Persona Moral' }}
+              </span>
+            </p>
+
+            <!-- Tipos de item seleccionados -->
+            <div class="mb-2" *ngIf="form.get('applies_to')?.value !== 'person'">
+              <strong>Items:</strong>
+              <span *ngIf="!form.get('item_types')?.value?.length" class="badge bg-secondary ms-1">Todos</span>
+              <span *ngFor="let itemType of form.get('item_types')?.value" class="badge bg-success ms-1">
+                {{ itemType === 'product' ? 'Productos' :
+                   itemType === 'service' ? 'Servicios' :
+                   itemType === 'kit' ? 'Kits' :
+                   itemType === 'equipment' ? 'Equipos' :
+                   itemType === 'supply' ? 'Insumos' : 'Consumibles' }}
+              </span>
+            </div>
+
+            <p class="mb-2"><strong>IVA:</strong> {{ form.get('vat_rate')?.value || 0 }}%
+              <span *ngIf="form.get('is_border_zone')?.value" class="badge bg-warning text-dark ms-1">Frontera</span>
+            </p>
+            <p class="mb-2" *ngIf="form.get('vat_retention_applies')?.value">
+              <strong>Ret. IVA:</strong> {{ form.get('vat_retention_rate')?.value || 0 }}%
+            </p>
+            <p class="mb-2" *ngIf="form.get('isr_retention_applies')?.value">
+              <strong>Ret. ISR:</strong> {{ form.get('isr_retention_rate')?.value || 0 }}%
+            </p>
+            <p class="mb-0" *ngIf="form.get('ieps_applies')?.value">
+              <strong>IEPS:</strong> {{ form.get('ieps_rate')?.value || 0 }}%
+            </p>
+
+            <hr>
+            <p class="mb-1 small"><strong>Ejemplo con $10,000:</strong></p>
+            <ul class="list-unstyled small mb-0">
+              <li>Subtotal: $10,000.00</li>
+              <li>+ IVA ({{ form.get('vat_rate')?.value }}%): ${{ (10000 * (form.get('vat_rate')?.value || 0) / 100).toFixed(2) }}</li>
+              <li *ngIf="form.get('ieps_applies')?.value">
+                + IEPS ({{ form.get('ieps_rate')?.value }}%): ${{ (10000 * (form.get('ieps_rate')?.value || 0) / 100).toFixed(2) }}
+              </li>
+              <li *ngIf="form.get('vat_retention_applies')?.value">
+                - Ret. IVA: ${{ (10000 * (form.get('vat_retention_rate')?.value || 0) / 100).toFixed(2) }}
+              </li>
+              <li *ngIf="form.get('isr_retention_applies')?.value">
+                - Ret. ISR: ${{ (10000 * (form.get('isr_retention_rate')?.value || 0) / 100).toFixed(2) }}
+              </li>
+              <li class="mt-1"><strong>Total: ${{ calculatePreviewTotal().toFixed(2) }}</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="submitting">
+        <i class="fa fa-times me-2"></i>Cancelar
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="submitting || form.invalid">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!submitting" class="fa fa-save me-2"></i>
+        {{ submitting ? 'Guardando...' : 'Guardar Regla' }}
+      </button>
+    </div>
+  </form>
+</main>

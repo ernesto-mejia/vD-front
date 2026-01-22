@@ -1,0 +1,36 @@
+/* Estilos para notification-edit */
+
+.layout {
+  display: flex;
+  min-height: calc(100vh - 60px);
+}
+
+.content {
+  flex: 1;
+  padding-top: 20px;
+}
+
+.container-fluid {
+  padding-top: 10px;
+}
+
+/* Header con gradiente */
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-header h5 {
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Switch activo/inactivo */
+.active-switch {
+  width: 3em;
+  height: 1.5em;
+}
+
+/* Vista previa de escalamiento */
+.escalation-preview {
+  border-left: 4px solid #0d6efd;
+}

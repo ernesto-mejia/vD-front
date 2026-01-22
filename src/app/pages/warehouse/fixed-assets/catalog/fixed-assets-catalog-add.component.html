@@ -1,0 +1,115 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-boxes-stacked me-2"></i>Nuevo Activo Fijo (Catalogo)
+              </h5>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button class="btn btn-warning btn-sm" (click)="saveCatalog()" [disabled]="loading">
+                <i class="fas fa-save me-1"></i>Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-info-circle me-2"></i>Informacion del Activo
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="catalogName" class="form-label">
+                  <span class="required-asterisk">*</span>Nombre
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="catalogName"
+                  [(ngModel)]="item.name"
+                  name="catalogName"
+                  [class.is-invalid]="submitted && !item.name"
+                />
+                <div *ngIf="submitted && !item.name" class="invalid-feedback">
+                  El nombre es requerido
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="catalogCategory" class="form-label">
+                  <span class="required-asterisk">*</span>Categoria
+                </label>
+                <select
+                  class="form-select"
+                  id="catalogCategory"
+                  [(ngModel)]="item.category"
+                  name="catalogCategory"
+                  [class.is-invalid]="submitted && !item.category"
+                >
+                  <option value="">Selecciona una categoria...</option>
+                  <option *ngFor="let category of categories" [value]="category">
+                    {{ category }}
+                  </option>
+                </select>
+                <div *ngIf="submitted && !item.category" class="invalid-feedback">
+                  La categoria es requerida
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="catalogProvider" class="form-label">Proveedor</label>
+                <select
+                  class="form-select"
+                  id="catalogProvider"
+                  [(ngModel)]="item.provider_id"
+                  name="catalogProvider"
+                >
+                  <option [ngValue]="undefined">Selecciona un proveedor...</option>
+                  <option *ngFor="let provider of providers" [ngValue]="provider.id">
+                    {{ provider.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label d-block">Opciones</label>
+                <div class="form-check form-check-inline mt-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="catalogBillable"
+                    [(ngModel)]="item.is_billable"
+                    name="catalogBillable"
+                  />
+                  <label class="form-check-label" for="catalogBillable">Se factura</label>
+                </div>
+                <div class="form-check form-check-inline mt-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="catalogPurchasable"
+                    [(ngModel)]="item.is_purchasable"
+                    name="catalogPurchasable"
+                  />
+                  <label class="form-check-label" for="catalogPurchasable">Se compra</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

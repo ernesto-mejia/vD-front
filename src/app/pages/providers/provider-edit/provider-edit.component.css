@@ -1,0 +1,87 @@
+/* Estilos específicos para provider-edit */
+
+.section-title {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.contact-card,
+.address-card {
+  border-radius: 0.375rem;
+}
+
+.field-label {
+  color: #6c757d; /* text-muted */
+}
+
+.field-value {
+  color: #212529;
+}
+
+/* Truncado para observaciones en tabla de documentos */
+.obs-truncate {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Ajustes de botones en headers de tarjetas */
+.card-header .btn {
+  line-height: 1;
+}
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+/* Estilos para checkboxes de scope */
+.scope-checkbox-container {
+  border: 1px solid #dee2e6;
+  padding: 12px;
+  border-radius: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  max-height: none;
+  overflow-y: visible;
+}
+
+.scope-checkbox-container .form-check {
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.scope-checkbox-container .form-check-input {
+  margin-right: 8px;
+}
+
+.scope-checkbox-container .form-check-label {
+  margin-bottom: 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Responsive: En mobile se muestra en una sola columna */
+@media (max-width: 576px) {
+  .scope-checkbox-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* En tablets */
+@media (min-width: 577px) and (max-width: 768px) {
+  .scope-checkbox-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+.scope-checkbox-container .form-check:last-child {
+  margin-bottom: 0;
+}

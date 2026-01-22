@@ -1,0 +1,36 @@
+/* Estilos para la lista de servicios */
+
+.custom-margin {
+  margin-bottom: 1rem;
+}
+
+.btn-group-sm > .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-group .btn {
+  margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+  margin-right: 0;
+}
+
+/* Estilos para badges de estado */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .btn-group .btn {
+    margin-right: 0;
+    margin-bottom: 2px;
+  }
+}

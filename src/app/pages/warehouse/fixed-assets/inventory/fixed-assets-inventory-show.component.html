@@ -1,0 +1,249 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-warehouse me-2"></i>Detalle de Activo Fijo (Inventario)
+              </h5>
+              <small class="opacity-75" *ngIf="item?.name">
+                {{ item?.name }} - ID: {{ item?.id }}
+              </small>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()" type="button">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button class="btn btn-warning btn-sm" (click)="goToEdit()" type="button">
+                <i class="fas fa-edit me-1"></i>Editar
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="confirmDelete()" type="button">
+                <i class="fas fa-trash me-1"></i>Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body" *ngIf="item">
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-info-circle me-2"></i>Informacion General
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Num interno</label>
+                  <p class="detail-value">{{ item.internal_code || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Nombre</label>
+                  <p class="detail-value">{{ item.name || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Ubicacion</label>
+                  <p class="detail-value">{{ item.location || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Categoria</label>
+                  <p class="detail-value">{{ item.category || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Catalogo</label>
+                  <p class="detail-value">{{ getCatalogName(item.catalog_id) }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">No. de serie</label>
+                  <p class="detail-value">{{ item.serial_number || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Tipo</label>
+                  <p class="detail-value">
+                    {{ item.ownership_type === 'owned' ? 'Activo propio' : 'Comodato' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="epica-form-section" *ngIf="item.ownership_type === 'comodato'">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-handshake me-2"></i>Datos de comodato
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Vigencia desde</label>
+                  <p class="detail-value">{{ item.comodato_valid_from || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Vigencia hasta</label>
+                  <p class="detail-value">{{ item.comodato_valid_until || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Propietario</label>
+                  <p class="detail-value">{{ item.comodato_owner || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Proveedor</label>
+                  <p class="detail-value">{{ getProviderName(item.comodato_provider_id) }}</p>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="detail-item">
+                  <label class="detail-label">Observaciones</label>
+                  <p class="detail-value">{{ item.comodato_observations || '-' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="epica-form-section" *ngIf="item.ownership_type === 'owned'">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-clipboard-list me-2"></i>Datos de activo propio
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Placa</label>
+                  <p class="detail-value">{{ item.plate_id || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Fecha de adquisicion</label>
+                  <p class="detail-value">{{ item.acquisition_date || '-' }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Valor de adquisicion</label>
+                  <p class="detail-value">
+                    {{ item.acquisition_value ? ('$' + item.acquisition_value.toLocaleString('es-MX')) : '-' }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="detail-item">
+                  <label class="detail-label">Observaciones</label>
+                  <p class="detail-value">{{ item.owned_observations || '-' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-tools me-2"></i>Mantenimiento
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Requiere mantenimiento</label>
+                  <p class="detail-value">{{ item.maintenance_required ? 'Si' : 'No' }}</p>
+                </div>
+              </div>
+              <ng-container *ngIf="item.maintenance_required">
+                <div class="col-md-6">
+                  <div class="detail-item">
+                    <label class="detail-label">Tipo</label>
+                    <p class="detail-value">
+                      {{
+                        item.maintenance_type === 'preventive'
+                          ? 'Preventivo'
+                          : item.maintenance_type === 'corrective'
+                          ? 'Correctivo'
+                          : '-'
+                      }}
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="detail-item">
+                    <label class="detail-label">Fecha desde</label>
+                    <p class="detail-value">{{ item.maintenance_date_from || '-' }}</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="detail-item">
+                    <label class="detail-label">Fecha hasta</label>
+                    <p class="detail-value">{{ item.maintenance_date_until || '-' }}</p>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="detail-item">
+                    <label class="detail-label">Descripcion del servicio</label>
+                    <p class="detail-value">{{ item.maintenance_description || '-' }}</p>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="detail-item">
+                    <label class="detail-label">Observaciones</label>
+                    <p class="detail-value">{{ item.maintenance_observations || '-' }}</p>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-box-open me-2"></i>Accesorios
+            </h6>
+            <div *ngIf="item.accessories?.length; else noAccessories">
+              <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                  <thead>
+                    <tr>
+                      <th>Descripcion</th>
+                      <th style="width: 140px">Cantidad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let accessory of item.accessories">
+                      <td>{{ accessory.description || '-' }}</td>
+                      <td>{{ accessory.quantity ?? '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <ng-template #noAccessories>
+              <p class="text-muted mb-0">Sin accesorios registrados.</p>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="card-body text-center" *ngIf="loading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando informacion...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,62 @@
+.main-content {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 15px;
+  }
+}
+
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.progress {
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+}
+
+.progress-bar {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+code {
+  background-color: #f8f9fa;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  color: #495057;
+}
+
+.form-control-sm {
+  font-size: 0.875rem;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.table-success {
+  --bs-table-bg: rgba(25, 135, 84, 0.1);
+}
+
+.table-danger {
+  --bs-table-bg: rgba(220, 53, 69, 0.1);
+}

@@ -1,0 +1,252 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-tags me-2"></i>Detalles de Lista de Precios
+              </h5>
+              <small class="opacity-75" *ngIf="priceList?.name">
+                {{ priceList?.name }} - {{ priceList?.code }}
+              </small>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()" type="button">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button
+                *ngIf="canEditPriceLists"
+                class="btn btn-warning btn-sm"
+                (click)="goToEdit()"
+                type="button"
+              >
+                <i class="fas fa-edit me-1"></i>Editar
+              </button>
+              <button
+                *ngIf="canDeletePriceLists"
+                class="btn btn-danger btn-sm"
+                (click)="confirmDelete()"
+                type="button"
+              >
+                <i class="fas fa-trash me-1"></i>Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body" *ngIf="priceList">
+          <!-- Información General -->
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-info-circle me-2"></i>Información General
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="detail-item">
+                  <label class="detail-label">Código</label>
+                  <p class="detail-value">{{ priceList.code || '-' }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-item">
+                  <label class="detail-label">Nombre</label>
+                  <p class="detail-value">{{ priceList.name || '-' }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="detail-item">
+                  <label class="detail-label">Estado</label>
+                  <p class="detail-value">
+                    <span
+                      class="badge"
+                      [ngClass]="priceList.is_active ? 'bg-success' : 'bg-danger'"
+                    >
+                      {{ priceList.is_active ? 'Activa' : 'Inactiva' }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="detail-item">
+                  <label class="detail-label">Descripción</label>
+                  <p class="detail-value">{{ priceList.description || 'Sin descripción' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información del Proveedor -->
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-truck me-2"></i>Proveedor
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Proveedor</label>
+                  <p class="detail-value">{{ getProviderName() }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Moneda</label>
+                  <p class="detail-value">{{ priceList.currency || '-' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Condiciones Comerciales -->
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-handshake me-2"></i>Condiciones Comerciales
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <div class="detail-item">
+                  <label class="detail-label">Descuento General</label>
+                  <p class="detail-value">{{ priceList.discount_percentage || 0 }}%</p>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="detail-item">
+                  <label class="detail-label">Términos de Pago</label>
+                  <p class="detail-value">{{ priceList.payment_terms || '-' }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="detail-item">
+                  <label class="detail-label">Tiempo de Entrega</label>
+                  <p class="detail-value">{{ priceList.delivery_time ? priceList.delivery_time + ' días' : '-' }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="detail-item">
+                  <label class="detail-label">Pedido Mínimo</label>
+                  <p class="detail-value">{{ priceList.minimum_order ? formatCurrency(priceList.minimum_order) : '-' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vigencia -->
+          <div class="epica-form-section">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-calendar-alt me-2"></i>Vigencia
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Fecha de Inicio</label>
+                  <p class="detail-value">{{ formatDate(priceList.start_date) }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <label class="detail-label">Fecha de Fin</label>
+                  <p class="detail-value">{{ formatDate(priceList.end_date) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notas -->
+          <div class="epica-form-section" *ngIf="priceList.notes">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-sticky-note me-2"></i>Notas
+            </h6>
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="detail-item">
+                  <p class="detail-value">{{ priceList.notes }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Artículos de la Lista -->
+          <div class="epica-form-section" *ngIf="priceList.items && priceList.items.length > 0">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-list me-2"></i>Artículos de la Lista ({{ priceList.items.length }})
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered table-sm">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Producto/Servicio</th>
+                    <th>SKU/Código</th>
+                    <th class="text-end">Precio Unitario</th>
+                    <th class="text-center">Descuento %</th>
+                    <th class="text-end">Precio Final</th>
+                    <th class="text-center">Cantidad Mín.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of priceList.items">
+                    <td>
+                      <span *ngIf="item.product_name">
+                        <i class="fas fa-box text-primary me-1"></i>{{ item.product_name }}
+                      </span>
+                      <span *ngIf="item.service_name">
+                        <i class="fas fa-cogs text-success me-1"></i>{{ item.service_name }}
+                      </span>
+                    </td>
+                    <td>{{ item.sku || '-' }}</td>
+                    <td class="text-end">{{ formatCurrency(item.unit_price) }}</td>
+                    <td class="text-center">{{ item.discount_percentage || 0 }}%</td>
+                    <td class="text-end fw-bold">{{ formatCurrency(item.final_price || item.unit_price) }}</td>
+                    <td class="text-center">{{ item.minimum_quantity || 1 }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Información de Auditoría -->
+          <div class="epica-form-section" *ngIf="priceList.created_at || priceList.updated_at">
+            <h6 class="epica-form-section-title">
+              <i class="fas fa-clock me-2"></i>Información de Auditoría
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6" *ngIf="priceList.created_at">
+                <div class="detail-item">
+                  <label class="detail-label">Fecha de Creación</label>
+                  <p class="detail-value">{{ formatDate(priceList.created_at) }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6" *ngIf="priceList.updated_at">
+                <div class="detail-item">
+                  <label class="detail-label">Última Actualización</label>
+                  <p class="detail-value">{{ formatDate(priceList.updated_at) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="card-body text-center" *ngIf="loading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2 text-muted">Cargando información...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

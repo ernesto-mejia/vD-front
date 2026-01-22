@@ -1,0 +1,41 @@
+/* Estilos para el formulario de agregar servicio */
+
+.epica-form-section {
+  margin-bottom: 2rem;
+}
+
+.epica-form-section-title {
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.required-asterisk {
+  color: #dc3545;
+  margin-right: 0.25rem;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.card-header {
+  border-radius: 0;
+}
+
+.btn-group .btn {
+  margin-left: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn-group {
+    flex-wrap: wrap;
+  }
+
+  .btn-group .btn {
+    margin-bottom: 0.25rem;
+  }
+}

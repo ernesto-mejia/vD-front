@@ -1,0 +1,328 @@
+<div>
+  <app-sidebar></app-sidebar>
+</div>
+
+<main id="content" class="container-fluid py-4">
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando regla de impuesto...</p>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a routerLink="/parameters/taxes/rules">Reglas de Impuestos</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+          </ol>
+        </nav>
+        <h2 class="mb-0">
+          <i class="fa fa-edit me-2 text-primary"></i>
+          Editar Regla: {{ taxRule?.name }}
+        </h2>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-triangle me-2"></i>
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = null"></button>
+    </div>
+
+    <!-- Formulario -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <!-- Columna Principal -->
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fa fa-info-circle me-2"></i>Información General
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-8">
+                  <label class="form-label">Nombre de la Regla <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="name"
+                         [class.is-invalid]="isFieldInvalid('name')">
+                  <div class="invalid-feedback">{{ getFieldError('name') }}</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Código <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control text-uppercase" formControlName="code"
+                         [class.is-invalid]="isFieldInvalid('code')">
+                  <div class="invalid-feedback">{{ getFieldError('code') }}</div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Descripción</label>
+                  <textarea class="form-control" formControlName="description" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuración de Tasas -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fa fa-calculator me-2"></i>Configuración de Tasas
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <!-- Aplica a -->
+                <div class="col-12">
+                  <label class="form-label"><strong>Esta regla aplica a:</strong> <span class="text-danger">*</span></label>
+                  <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" formControlName="applies_to" value="person" id="appliesPerson">
+                    <label class="btn btn-outline-secondary" for="appliesPerson">
+                      <i class="fa fa-user me-1"></i> Solo Personas
+                    </label>
+                    <input type="radio" class="btn-check" formControlName="applies_to" value="item" id="appliesItem">
+                    <label class="btn btn-outline-success" for="appliesItem">
+                      <i class="fa fa-cube me-1"></i> Solo Items
+                    </label>
+                    <input type="radio" class="btn-check" formControlName="applies_to" value="both" id="appliesBoth">
+                    <label class="btn btn-outline-info" for="appliesBoth">
+                      <i class="fa fa-users me-1"></i> Ambos
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Tipo de Persona (solo si aplica a personas o ambos) -->
+                <div class="col-md-6" *ngIf="form.get('applies_to')?.value !== 'item'">
+                  <label class="form-label">Tipo de Persona <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="person_type">
+                    <option value="fisica">Persona Física (RFC 13 caracteres)</option>
+                    <option value="moral">Persona Moral (RFC 12 caracteres)</option>
+                  </select>
+                </div>
+
+                <!-- Tipos de Item (solo si aplica a items o ambos) -->
+                <div class="col-12" *ngIf="form.get('applies_to')?.value !== 'person'">
+                  <label class="form-label">Tipos de Item</label>
+                  <div class="row">
+                    <div class="col-6 col-md-4" *ngFor="let option of itemTypeOptions">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               [id]="'itemType_' + option.value"
+                               [checked]="isItemTypeSelected(option.value)"
+                               (change)="onItemTypeChange(option.value, $event)">
+                        <label class="form-check-label" [for]="'itemType_' + option.value">
+                          {{ option.label }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <small class="text-muted">Deja vacío para aplicar a todos los tipos</small>
+                </div>
+
+                <!-- Código SAT del producto (solo si aplica a items) -->
+                <div class="col-md-6" *ngIf="form.get('applies_to')?.value !== 'person'">
+                  <label class="form-label">Código SAT Producto/Servicio</label>
+                  <input type="text" class="form-control" formControlName="sat_product_code"
+                         placeholder="Ej: 84111506">
+                  <small class="text-muted">Opcional: código del catálogo c_ClaveProdServ del SAT</small>
+                </div>
+
+                <div class="col-md-6" *ngIf="form.get('applies_to')?.value !== 'item'">
+                  <label class="form-label">Régimen Fiscal (Opcional)</label>
+                  <select class="form-select" formControlName="tax_regime_id">
+                    <option [ngValue]="null">-- Aplica a todos los regímenes --</option>
+                    <option *ngFor="let regime of taxRegimes" [ngValue]="regime.id">
+                      {{ regime.sat_tax_regime_code }} - {{ regime.tax_regime }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Zona Fronteriza -->
+                <div class="col-12">
+                  <hr class="my-2">
+                  <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" formControlName="is_border_zone" id="isBorderZone">
+                    <label class="form-check-label" for="isBorderZone">
+                      <strong><i class="fa fa-map-marker me-1"></i>Zona Fronteriza</strong>
+                      <small class="text-muted d-block">IVA reducido al 8% en lugar del 16%</small>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- IVA -->
+                <div class="col-12">
+                  <hr class="my-2">
+                  <h6 class="text-primary mb-3"><i class="fa fa-percent me-2"></i>IVA</h6>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Tasa de IVA (%)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" formControlName="vat_rate"
+                           min="0" max="100" step="0.01">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">¿Aplica Retención IVA?</label>
+                  <div class="form-check form-switch mt-2">
+                    <input type="checkbox" class="form-check-input" formControlName="vat_retention_applies">
+                  </div>
+                </div>
+                <div class="col-md-4" *ngIf="form.get('vat_retention_applies')?.value">
+                  <label class="form-label">Tasa Retención IVA (%)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" formControlName="vat_retention_rate"
+                           min="0" max="100" step="0.0001">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+
+                <!-- ISR -->
+                <div class="col-12">
+                  <hr class="my-2">
+                  <h6 class="text-danger mb-3"><i class="fa fa-money me-2"></i>ISR</h6>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">¿Aplica Retención ISR?</label>
+                  <div class="form-check form-switch mt-2">
+                    <input type="checkbox" class="form-check-input" formControlName="isr_retention_applies">
+                  </div>
+                </div>
+                <div class="col-md-6" *ngIf="form.get('isr_retention_applies')?.value">
+                  <label class="form-label">Tasa Retención ISR (%)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" formControlName="isr_retention_rate"
+                           min="0" max="100" step="0.01">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+
+                <!-- IEPS -->
+                <div class="col-12">
+                  <hr class="my-2">
+                  <h6 class="text-warning mb-3"><i class="fa fa-exclamation-triangle me-2"></i>IEPS (Impuesto Especial)</h6>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">¿Aplica IEPS?</label>
+                  <div class="form-check form-switch mt-2">
+                    <input type="checkbox" class="form-check-input" formControlName="ieps_applies" id="iepsApplies">
+                    <label class="form-check-label" for="iepsApplies">
+                      <small class="text-muted">Para bebidas, tabaco, combustibles, etc.</small>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6" *ngIf="form.get('ieps_applies')?.value">
+                  <label class="form-label">Tasa IEPS (%)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" formControlName="ieps_rate"
+                           min="0" max="200" step="0.01">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Lateral -->
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fa fa-cog me-2"></i>Opciones
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" formControlName="active" id="active">
+                  <label class="form-check-label" for="active"><strong>Regla Activa</strong></label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" formControlName="is_default" id="isDefault">
+                  <label class="form-check-label" for="isDefault"><strong>Regla por Defecto</strong></label>
+                </div>
+              </div>
+              <div class="mb-0">
+                <label class="form-label">Prioridad</label>
+                <input type="number" class="form-control" formControlName="priority" min="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="card bg-light">
+            <div class="card-header">
+              <h5 class="card-title mb-0"><i class="fa fa-eye me-2"></i>Vista Previa ($10,000)</h5>
+            </div>
+            <div class="card-body">
+              <!-- Aplica a -->
+              <p class="mb-2">
+                <strong>Aplica a:</strong>
+                <span class="badge"
+                      [class.bg-secondary]="form.get('applies_to')?.value === 'person'"
+                      [class.bg-success]="form.get('applies_to')?.value === 'item'"
+                      [class.bg-info]="form.get('applies_to')?.value === 'both'">
+                  {{ form.get('applies_to')?.value === 'person' ? 'Personas' :
+                     form.get('applies_to')?.value === 'item' ? 'Items' : 'Ambos' }}
+                </span>
+              </p>
+
+              <!-- Tipos de item seleccionados -->
+              <div class="mb-2" *ngIf="form.get('applies_to')?.value !== 'person'">
+                <strong>Items:</strong>
+                <span *ngIf="!form.get('item_types')?.value?.length" class="badge bg-secondary ms-1">Todos</span>
+                <span *ngFor="let itemType of form.get('item_types')?.value" class="badge bg-success ms-1">
+                  {{ itemType === 'product' ? 'Productos' :
+                     itemType === 'service' ? 'Servicios' :
+                     itemType === 'kit' ? 'Kits' :
+                     itemType === 'equipment' ? 'Equipos' :
+                     itemType === 'supply' ? 'Insumos' : 'Consumibles' }}
+                </span>
+              </div>
+
+              <p class="mb-2" *ngIf="form.get('is_border_zone')?.value">
+                <span class="badge bg-warning text-dark"><i class="fa fa-map-marker me-1"></i>Zona Fronteriza</span>
+              </p>
+
+              <hr>
+              <ul class="list-unstyled small mb-0">
+                <li>Subtotal: $10,000.00</li>
+                <li>+ IVA ({{ form.get('vat_rate')?.value }}%): ${{ (10000 * (form.get('vat_rate')?.value || 0) / 100).toFixed(2) }}</li>
+                <li *ngIf="form.get('ieps_applies')?.value">
+                  + IEPS ({{ form.get('ieps_rate')?.value }}%): ${{ (10000 * (form.get('ieps_rate')?.value || 0) / 100).toFixed(2) }}
+                </li>
+                <li *ngIf="form.get('vat_retention_applies')?.value">
+                  - Ret. IVA: ${{ (10000 * (form.get('vat_retention_rate')?.value || 0) / 100).toFixed(2) }}
+                </li>
+                <li *ngIf="form.get('isr_retention_applies')?.value">
+                  - Ret. ISR: ${{ (10000 * (form.get('isr_retention_rate')?.value || 0) / 100).toFixed(2) }}
+                </li>
+                <li class="mt-2"><strong>Total: ${{ calculatePreviewTotal().toFixed(2) }}</strong></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="submitting">
+          <i class="fa fa-times me-2"></i>Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting || form.invalid">
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!submitting" class="fa fa-save me-2"></i>
+          {{ submitting ? 'Guardando...' : 'Guardar Cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</main>

@@ -1,0 +1,193 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="container-fluid py-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Bandeja de Notificaciones</h5>
+        <div class="d-flex gap-2 align-items-center">
+          <!-- Botones de acción masiva -->
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-info"
+                    (click)="markAllViewed()"
+                    [disabled]="processingBulk"
+                    title="Marcar todas como visualizadas">
+              <i class="fa fa-eye me-1"></i> Marcar todas vistas
+            </button>
+            <button class="btn btn-outline-success"
+                    (click)="markAllAttended()"
+                    [disabled]="processingBulk"
+                    title="Marcar todas como atendidas">
+              <i class="fa fa-check-double me-1"></i> Marcar todas atendidas
+            </button>
+          </div>
+          <span class="badge bg-warning text-dark" *ngIf="pendingAuthorizations.length > 0">
+            <i class="fa fa-shield-alt me-1"></i>{{ pendingAuthorizations.length }} autorizaciones
+          </span>
+          <span class="badge bg-primary">{{ total }} notificaciones</span>
+        </div>
+      </div>
+
+  <!-- Sección de Autorizaciones Pendientes -->
+  <div *ngIf="pendingAuthorizations.length > 0" class="card mb-3 border-warning">
+    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">
+        <i class="fa fa-shield-alt me-2"></i>Autorizaciones Pendientes
+      </h6>
+      <span class="badge bg-dark">{{ pendingAuthorizations.length }}</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="list-group list-group-flush">
+        <div *ngFor="let auth of pendingAuthorizations" class="list-group-item">
+          <div class="d-flex w-100 justify-content-between align-items-center">
+            <div class="flex-grow-1">
+              <h6 class="mb-1">{{ auth.title }}</h6>
+              <p class="mb-1 small text-muted">{{ auth.body }}</p>
+              <div class="d-flex gap-2 flex-wrap">
+                <span class="badge bg-info">{{ auth.module }}</span>
+                <span class="badge bg-secondary">{{ getAuthTypeLabel(auth.authorizableType) }} #{{ auth.authorizableId }}</span>
+                <small class="text-muted">{{ auth.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
+              </div>
+            </div>
+            <div class="btn-group ms-3">
+              <button class="btn btn-success btn-sm"
+                      (click)="approveAuthorization(auth)"
+                      [disabled]="processingAuthId === auth.id"
+                      title="Aprobar">
+                <i class="fa" [class.fa-check]="processingAuthId !== auth.id"
+                   [class.fa-spinner]="processingAuthId === auth.id"
+                   [class.fa-spin]="processingAuthId === auth.id"></i>
+                Aprobar
+              </button>
+              <button class="btn btn-outline-danger btn-sm"
+                      (click)="rejectAuthorization(auth)"
+                      [disabled]="processingAuthId === auth.id"
+                      title="Rechazar">
+                <i class="fa fa-times"></i>
+                Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading autorizaciones -->
+  <div *ngIf="loadingAuth" class="text-center py-2 mb-3">
+    <span class="spinner-border spinner-border-sm text-warning me-2"></span>
+    Cargando autorizaciones...
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small">Módulo</label>
+          <select title="seleccionar modulo" class="form-select form-select-sm" [(ngModel)]="filterModule" (change)="onFilterChange()">
+            <option value="">Todos</option>
+            <option *ngFor="let m of modules" [value]="m">{{ m | titlecase }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small">Severidad</label>
+          <select title="seleccionar severidad" class="form-select form-select-sm" [(ngModel)]="filterSeverity" (change)="onFilterChange()">
+            <option value="">Todas</option>
+            <option *ngFor="let sv of severities" [value]="sv">{{ sv | titlecase }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Buscar</label>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control" placeholder="Buscar por título o contenido..."
+                   [(ngModel)]="searchText" (keyup.enter)="onSearch()">
+            <button title="buscar"   class="btn btn-outline-secondary" type="button" (click)="onSearch()">
+              <i class="fa fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-outline-secondary w-100" (click)="clearFilters()">
+            <i class="fa fa-times"></i> Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando notificaciones...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="alert alert-danger">
+    {{ error }}
+    <button class="btn btn-link" (click)="loadNotifications()">Reintentar</button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && list.length === 0" class="text-center py-5 text-muted">
+    <i class="fa fa-bell-slash fa-3x mb-3"></i>
+    <p>No hay notificaciones que mostrar</p>
+  </div>
+
+  <!-- Lista de notificaciones -->
+  <div *ngIf="!loading && !error && list.length > 0" class="list-group mb-3">
+    <div *ngFor="let n of list"
+         class="list-group-item list-group-item-action"
+         [class.list-group-item-light]="!isUnread(n)"
+         [class.fw-bold]="isUnread(n)"
+         (click)="open(n)"
+         style="cursor: pointer;">
+      <div class="d-flex w-100 justify-content-between align-items-start">
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center mb-1">
+            <span *ngIf="isUnread(n)" class="badge bg-primary me-2">Nueva</span>
+            <h6 class="mb-0">{{ n.title }}</h6>
+          </div>
+          <p class="mb-1 small text-muted">{{ n.body }}</p>
+          <div class="d-flex gap-2 flex-wrap">
+            <span class="badge bg-info">{{ n.module }}</span>
+            <span class="badge bg-secondary">{{ n.action }}</span>
+            <span [class]="getSeverityClass(n.severity)">{{ n.severity }}</span>
+            <span [class]="getStatusClass(n.user_status || n.status)">{{ n.user_status || n.status }}</span>
+          </div>
+        </div>
+        <div class="text-end ms-3">
+          <small class="text-muted d-block mb-2">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-primary" (click)="open(n); $event.stopPropagation()" title="Ver detalle">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button class="btn btn-outline-success" (click)="markAttended(n, $event)" title="Marcar como atendida">
+              <i class="fa fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <nav *ngIf="!loading && lastPage > 1" aria-label="Navegación de notificaciones">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="page-link" (click)="goToPage(currentPage - 1)">Anterior</button>
+      </li>
+      <li class="page-item" *ngFor="let page of [].constructor(lastPage); let i = index"
+          [class.active]="currentPage === i + 1">
+        <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === lastPage">
+        <button class="page-link" (click)="goToPage(currentPage + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+    </div>
+  </div>
+</div>

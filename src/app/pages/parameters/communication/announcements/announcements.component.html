@@ -1,0 +1,376 @@
+<div>
+  <app-sidebar></app-sidebar>
+</div>
+
+<main id="content" class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">
+        <i class="bi bi-megaphone me-2"></i>
+        Anuncios
+      </h2>
+      <p class="text-muted mb-0">Gestione los anuncios y comunicados internos</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="bi bi-plus-lg me-1"></i>
+      Nuevo Anuncio
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" placeholder="Buscar anuncios..."
+                   [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+            @for (status of statuses; track status.value) {
+              <option [value]="status.value">{{ status.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="filterType" (ngModelChange)="onFilterChange()">
+            <option value="">Todos los tipos</option>
+            @for (type of types; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="loadAnnouncements()">
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && announcements().length === 0) {
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <i class="bi bi-megaphone display-1 text-muted"></i>
+        <h4 class="mt-3">No hay anuncios</h4>
+        <p class="text-muted">Cree un anuncio para comunicarse con los usuarios.</p>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <i class="bi bi-plus-lg me-1"></i>
+          Crear Anuncio
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Announcements Table -->
+  @if (!loading() && announcements().length > 0) {
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Anuncio</th>
+              <th>Tipo</th>
+              <th>Alcance</th>
+              <th>Estado</th>
+              <th>Fechas</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (announcement of announcements(); track announcement.id) {
+              <tr>
+                <td>
+                  <div class="d-flex align-items-start">
+                    <i [class]="getTypeConfig(announcement.type).icon + ' fs-4 me-3'"
+                       [class.text-primary]="announcement.type === 'info'"
+                       [class.text-warning]="announcement.type === 'warning'"
+                       [class.text-danger]="announcement.type === 'urgent'"
+                       [class.text-success]="announcement.type === 'celebration'"></i>
+                    <div>
+                      <div class="fw-semibold">
+                        {{ announcement.title }}
+                        @if (announcement.is_pinned) {
+                          <i class="bi bi-pin-fill text-primary ms-1" title="Fijado"></i>
+                        }
+                        @if (announcement.is_modal) {
+                          <i class="bi bi-window-stack text-info ms-1" title="Modal"></i>
+                        }
+                      </div>
+                      <small class="text-muted">
+                        {{ announcement.content | slice:0:80 }}{{ announcement.content.length > 80 ? '...' : '' }}
+                      </small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span [class]="'badge bg-' + getTypeConfig(announcement.type).color">
+                    {{ getTypeConfig(announcement.type).label }}
+                  </span>
+                </td>
+                <td>
+                  <span class="text-capitalize">{{ announcement.scope_label || announcement.scope }}</span>
+                </td>
+                <td>
+                  <span [class]="'badge ' + getStatusBadge(announcement.status).class">
+                    {{ getStatusBadge(announcement.status).text }}
+                  </span>
+                  @if (announcement.reads_count !== undefined) {
+                    <br>
+                    <small class="text-muted">{{ announcement.reads_count }} lecturas</small>
+                  }
+                </td>
+                <td>
+                  <small>
+                    @if (announcement.starts_at) {
+                      <div><i class="bi bi-calendar-event me-1"></i>{{ announcement.starts_at | date:'short' }}</div>
+                    }
+                    @if (announcement.expires_at) {
+                      <div class="text-muted"><i class="bi bi-calendar-x me-1"></i>{{ announcement.expires_at | date:'short' }}</div>
+                    }
+                  </small>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" title="Ver" (click)="openViewModal(announcement)">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" title="Editar" (click)="openEditModal(announcement)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" title="Eliminar" (click)="delete(announcement)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+<!-- Create/Edit Modal -->
+@if (showModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-megaphone me-2"></i>
+            {{ modalTitle() }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="form">
+            <!-- Title -->
+            <div class="mb-3">
+              <label class="form-label">Título *</label>
+              <input type="text" class="form-control" formControlName="title"
+                     placeholder="Ingrese el título del anuncio">
+              @if (form.get('title')?.touched && form.get('title')?.errors) {
+                <div class="text-danger small">El título es requerido</div>
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="mb-3">
+              <label class="form-label">Contenido *</label>
+              <textarea class="form-control" formControlName="content" rows="4"
+                        placeholder="Escriba el contenido del anuncio..."></textarea>
+              @if (form.get('content')?.touched && form.get('content')?.errors) {
+                <div class="text-danger small">El contenido es requerido</div>
+              }
+            </div>
+
+            <!-- Type, Priority, Status -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Tipo *</label>
+                <select class="form-select" formControlName="type">
+                  @for (type of types; track type.value) {
+                    <option [value]="type.value">{{ type.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Prioridad *</label>
+                <select class="form-select" formControlName="priority">
+                  @for (priority of priorities; track priority.value) {
+                    <option [value]="priority.value">{{ priority.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Estado *</label>
+                <select class="form-select" formControlName="status">
+                  <option value="draft">Borrador</option>
+                  <option value="scheduled">Programado</option>
+                  <option value="active">Activo</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Scope -->
+            <div class="mb-3">
+              <label class="form-label">Alcance *</label>
+              <select class="form-select" formControlName="scope">
+                @for (scope of scopes; track scope.value) {
+                  <option [value]="scope.value">{{ scope.label }}</option>
+                }
+              </select>
+              <small class="text-muted">Define quiénes verán este anuncio</small>
+            </div>
+
+            <!-- Dates -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Fecha de inicio</label>
+                <input type="datetime-local" class="form-control" formControlName="starts_at">
+                <small class="text-muted">Dejar vacío para mostrar inmediatamente</small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fecha de expiración</label>
+                <input type="datetime-local" class="form-control" formControlName="expires_at">
+                <small class="text-muted">Dejar vacío para no expirar</small>
+              </div>
+            </div>
+
+            <!-- Options -->
+            <div class="card bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title mb-3">Opciones de visualización</h6>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" formControlName="is_pinned" id="isPinned">
+                      <label class="form-check-label" for="isPinned">
+                        <i class="bi bi-pin me-1"></i>Fijar anuncio
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" formControlName="is_modal" id="isModal">
+                      <label class="form-check-label" for="isModal">
+                        <i class="bi bi-window-stack me-1"></i>Mostrar como modal
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" formControlName="requires_acknowledgment" id="requiresAck">
+                      <label class="form-check-label" for="requiresAck">
+                        <i class="bi bi-check-circle me-1"></i>Requiere confirmación
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">URL de acción (opcional)</label>
+                <input type="url" class="form-control" formControlName="action_url"
+                       placeholder="https://ejemplo.com">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Texto del botón (opcional)</label>
+                <input type="text" class="form-control" formControlName="action_text"
+                       placeholder="Ver más">
+              </div>
+            </div>
+
+            <!-- Image -->
+            <div class="mb-3">
+              <label class="form-label">URL de imagen (opcional)</label>
+              <input type="url" class="form-control" formControlName="image_url"
+                     placeholder="https://ejemplo.com/imagen.jpg">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-primary" (click)="save()" [disabled]="loading()">
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            {{ isEditing() ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- View Modal -->
+@if (showViewModal() && selectedAnnouncement()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" [class.bg-primary]="selectedAnnouncement()!.type === 'info'"
+             [class.bg-warning]="selectedAnnouncement()!.type === 'warning'"
+             [class.bg-danger]="selectedAnnouncement()!.type === 'urgent'"
+             [class.bg-success]="selectedAnnouncement()!.type === 'celebration'"
+             [class.text-white]="selectedAnnouncement()!.type !== 'warning'">
+          <h5 class="modal-title">
+            <i [class]="getTypeConfig(selectedAnnouncement()!.type).icon + ' me-2'"></i>
+            {{ selectedAnnouncement()!.title }}
+          </h5>
+          <button type="button" class="btn-close" [class.btn-close-white]="selectedAnnouncement()!.type !== 'warning'"
+                  (click)="closeViewModal()"></button>
+        </div>
+        <div class="modal-body">
+          @if (selectedAnnouncement()!.image_url) {
+            <img [src]="selectedAnnouncement()!.image_url" class="img-fluid rounded mb-3" alt="Imagen del anuncio">
+          }
+          <p class="mb-3" style="white-space: pre-wrap;">{{ selectedAnnouncement()!.content }}</p>
+          <div class="d-flex gap-2 flex-wrap">
+            <span [class]="'badge ' + getStatusBadge(selectedAnnouncement()!.status).class">
+              {{ getStatusBadge(selectedAnnouncement()!.status).text }}
+            </span>
+            <span [class]="'badge ' + getPriorityBadge(selectedAnnouncement()!.priority)">
+              Prioridad: {{ selectedAnnouncement()!.priority }}
+            </span>
+          </div>
+          @if (selectedAnnouncement()!.creator_name) {
+            <p class="text-muted mt-3 mb-0">
+              <small>Creado por: {{ selectedAnnouncement()!.creator_name }}</small>
+            </p>
+          }
+        </div>
+        <div class="modal-footer">
+          @if (selectedAnnouncement()!.action_url) {
+            <a [href]="selectedAnnouncement()!.action_url" target="_blank" class="btn btn-primary">
+              {{ selectedAnnouncement()!.action_text || 'Ver más' }}
+            </a>
+          }
+          <button type="button" class="btn btn-secondary" (click)="closeViewModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+</main>

@@ -1,0 +1,153 @@
+.main-content {
+  padding-top: 0;
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  border-bottom-width: 1px;
+}
+
+.table td {
+  vertical-align: middle;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
+
+.btn-group .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.65em;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.input-group-text {
+  background-color: #fff;
+}
+
+/* Truncate text */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Page link cursor */
+.page-link {
+  cursor: pointer;
+}
+
+.page-item.disabled .page-link {
+  cursor: not-allowed;
+}
+
+/* Quick filter buttons */
+.btn-group-sm .btn {
+  font-size: 0.8125rem;
+}
+
+/* Card improvements */
+.card {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.card-header {
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.75rem 1rem;
+}
+
+/* Loading state */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Status badge styling */
+.badge[style*="background-color"] {
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .btn-group .btn {
+    padding: 0.2rem 0.4rem;
+  }
+
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .d-flex.justify-content-between button {
+    margin-top: 1rem;
+    width: 100%;
+  }
+}
+
+/* Progress bar styles for delivery tracking */
+.progress-sm {
+  height: 6px;
+  min-width: 60px;
+  flex-grow: 1;
+}
+
+.progress-md {
+  height: 8px;
+}
+
+.badge-sm {
+  font-size: 0.7rem;
+}
+
+/* OC/Progress column styling */
+.progress-summary-cell {
+  min-width: 150px;
+}
+
+/* Delivery status colors */
+.delivery-delivered {
+  color: #198754;
+}
+
+.delivery-partial {
+  color: #0dcaf0;
+}
+
+.delivery-pending {
+  color: #ffc107;
+}
+
+.delivery-cancelled {
+  color: #dc3545;
+}

@@ -1,0 +1,59 @@
+<div>
+  <dl class="row mb-0">
+    <dt class="col-sm-3">Proveedor principal</dt>
+    <dd class="col-sm-9">{{ getPrimaryProviderName() }}</dd>
+
+    <dt class="col-sm-3"># Catálogo</dt>
+    <dd class="col-sm-9">{{ getPrimaryProviderCode() }}</dd>
+
+    <dt class="col-sm-3">REF</dt>
+    <dd class="col-sm-9">{{ getPrimaryProviderRef() }}</dd>
+
+    <dt class="col-12">
+      <hr class="border border-dark opacity-100 my-2" />
+    </dt>
+
+    <dt class="col-sm-3">Nombre</dt>
+    <dd class="col-sm-9">{{ product?.name || "-" }}</dd>
+
+    <dt class="col-sm-3">SKU</dt>
+    <dd class="col-sm-9">{{ product?.sku || "-" }}</dd>
+
+    <dt class="col-sm-3">GTIN</dt>
+    <dd class="col-sm-9">{{ product?.gtin || "-" }}</dd>
+
+    <dt class="col-sm-3">Unidad de medida (inventario)</dt>
+    <dd class="col-sm-9">
+      {{ product?.inventory_unit_of_measurement?.name || "-" }}
+    </dd>
+
+    <dt class="col-sm-3">Unidad de medida (compra)</dt>
+    <dd class="col-sm-9">
+      {{ product?.purchase_unit_of_measurement?.name || "-" }}
+    </dd>
+
+    <dt class="col-sm-3">Equivalencia entre unidades</dt>
+    <dd class="col-sm-9">
+      {{ product?.unit_equivalence ?? 0 }}
+    </dd>
+
+    <dt class="col-sm-3">Condición de almacenaje</dt>
+    <dd class="col-sm-9">
+      {{ product?.storage_condition?.name || "-" }}
+    </dd>
+
+    <dt class="col-sm-3">Estatus</dt>
+    <dd class="col-sm-9">{{ product?.status?.name || "-" }}</dd>
+
+    <dt class="col-sm-3">Tipo de producto</dt>
+    <dd class="col-sm-9">
+      {{ product?.product_type?.name || "-" }}
+    </dd>
+
+    <dt class="col-sm-3">Presentación</dt>
+    <dd class="col-sm-9">
+      {{ product?.product_presentation?.name || "-" }}
+    </dd>
+
+  </dl>
+</div>

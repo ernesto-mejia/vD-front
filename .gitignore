@@ -1,0 +1,54 @@
+# Ignorar configuración local de proxy
+proxy.conf.json
+/proxy.conf.*.json
+.proxy.config.json
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+# Ignorar el archivo package-lock.json
+package-lock.json
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+.angular
+/.angular
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# Firebase cache
+.firebase/*.cache
+
+# System files
+.DS_Store
+Thumbs.db
+proxy.conf.json
+proxy.dev.conf.json
+.firebase/hosting.ZGlzdC9hbmd1bGFyXzE4X2xvZ2luX3dpdGhfbG9jYWxfc3RvcmFnZS9icm93c2Vy.cache

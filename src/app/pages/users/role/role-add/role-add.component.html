@@ -1,0 +1,114 @@
+<div>
+  <div>
+    <app-sidebar></app-sidebar>
+  </div>
+  <div class="p-5">
+    <div class="container-fluid">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3">Procesando información...</p>
+      </div>
+
+      <!-- Form Card -->
+      <div *ngIf="!loading" class="row">
+        <div class="col-lg-10 offset-lg-1">
+          <div class="card border-0 shadow-sm">
+            <!-- Header -->
+            <div class="card-header bg-primary text-white py-3">
+              <h3 class="mb-0">
+                <i class="fas fa-plus-circle me-2"></i>Crear Nuevo Rol
+              </h3>
+            </div>
+
+            <!-- Form Body -->
+            <div class="card-body">
+              <form (ngSubmit)="onSubmit()">
+                <!-- Basic Info Section -->
+                <div class="row g-4 mb-4">
+                  <div class="col-lg-6">
+                    <label for="name" class="form-label text-muted small text-uppercase fw-bold">
+                      <i class="fas fa-tag me-2 text-primary"></i>Nombre del Rol *
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control form-control-lg"
+                      id="name"
+                      [(ngModel)]="role.name"
+                      name="name"
+                      placeholder="Ej: Administrador, Gerente, Supervisor"
+                      required
+                      [disabled]="loading"
+                    />
+                  </div>
+                  <div class="col-lg-6">
+                    <label for="guard_name" class="form-label text-muted small text-uppercase fw-bold">
+                      <i class="fas fa-shield me-2 text-info"></i>Guard Name *
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control form-control-lg"
+                      id="guard_name"
+                      [(ngModel)]="role.guard_name"
+                      name="guard_name"
+                      placeholder="Ej: api, web, admin"
+                      required
+                      [disabled]="loading"
+                    />
+                  </div>
+                </div>
+
+                <!-- Permissions Section -->
+                <div class="mb-4">
+                  <label class="form-label text-muted small text-uppercase fw-bold mb-3 d-block">
+                    <i class="fas fa-lock-open me-2 text-success"></i>Seleccionar Permisos *
+                  </label>
+                  <div class="permissions-grid">
+                    <div *ngFor="let category of permissionCategories" class="permission-card">
+                      <div class="permission-card-header">
+                        <h6 class="mb-0">
+                          <i class="fas fa-folder-open me-2"></i>{{ category.name }}
+                        </h6>
+                      </div>
+                      <div class="permission-card-body">
+                        <div *ngFor="let permission of category.permissions" class="form-check mb-2">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            [id]="'perm-' + permission.id"
+                            [value]="permission.name"
+                            title="Seleccionar permiso"
+                            [checked]="isPermissionChecked(permission)"
+                            [disabled]="loading"
+                            (change)="onPermissionChange($event, permission)"
+                          />
+                          <label class="form-check-label" [for]="'perm-' + permission.id">
+                            <span class="permission-name">{{ permission.name }}</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Footer with Actions -->
+            <div class="card-footer d-flex justify-content-between align-items-center">
+              <button type="button" class="btn btn-outline-secondary" (click)="onCancel()" [disabled]="loading">
+                <i class="fas fa-times me-2"></i>Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="loading" (click)="onSubmit()">
+                <i class="fas fa-save me-2" *ngIf="!loading"></i>
+                <i class="fas fa-spinner fa-spin me-2" *ngIf="loading"></i>
+                {{ loading ? 'Creando...' : 'Crear Rol' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

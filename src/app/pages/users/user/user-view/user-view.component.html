@@ -1,0 +1,275 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-user me-2"></i>Información del Usuario
+              </h5>
+              <small class="opacity-75" *ngIf="user?.user_name">
+                {{ user?.user_name }}
+              </small>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()" type="button">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button class="btn btn-warning btn-sm" (click)="editUser()" type="button">
+                <i class="fas fa-edit me-1"></i>Editar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div *ngIf="user; else loading">
+            <!-- Sección: Información del Usuario -->
+            <div class="epica-form-section">
+              <h6 class="epica-form-section-title">
+                <i class="fas fa-id-card me-2"></i>Datos del Usuario
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label text-muted">Nombre de Usuario</label>
+                  <div class="fw-medium">{{ user?.user_name || 'No especificado' }}</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted">Email</label>
+                  <div class="fw-medium">
+                    <a *ngIf="user?.email" [href]="'mailto:' + user.email" class="text-primary text-decoration-none">
+                      <i class="fas fa-envelope me-1"></i>{{ user.email }}
+                    </a>
+                    <span *ngIf="!user?.email">No especificado</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" role="tab" data-bs-toggle="tab" href="#tab-2">
+                  <i class="fas fa-user-shield me-1"></i>Roles y Permisos
+                </a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" role="tab" data-bs-toggle="tab" href="#tab-estadisticas">
+                  <i class="fas fa-chart-line me-1"></i>Estadísticas
+                </a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <!-- Tab: Roles y Permisos -->
+              <div class="tab-pane active" role="tabpanel" id="tab-2">
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label text-muted">Roles Asignados</label>
+                    <div>
+                      <div *ngIf="roles && roles.length > 0; else noRoles">
+                        <span *ngFor="let role of roles" class="badge bg-primary me-2 mb-1">
+                          <i class="fas fa-user-tag me-1"></i>{{ role.name }}
+                        </span>
+                      </div>
+                      <ng-template #noRoles>
+                        <span class="text-muted">No hay roles asignados</span>
+                      </ng-template>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-muted">Status</label>
+                    <div>
+                      <span class="badge" [class.bg-success]="user?.status === 'Activo'" [class.bg-danger]="user?.status !== 'Activo'">
+                        {{ user?.status || 'Sin status' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Permisos -->
+                <div class="epica-form-section">
+                  <h6 class="epica-form-section-title">
+                    <i class="fas fa-key me-2"></i>Permisos Efectivos ({{ effectivePermissions.length }})
+                  </h6>
+                  <div *ngIf="effectivePermissions && effectivePermissions.length > 0; else noPermissions">
+                    <div class="row g-2">
+                      <div class="col-md-3 col-sm-6" *ngFor="let permission of effectivePermissions">
+                        <span class="badge bg-light text-dark border w-100 text-start py-2">
+                          <i class="fas fa-check-circle text-success me-1"></i>{{ permission }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #noPermissions>
+                    <div class="alert alert-warning">
+                      <i class="fas fa-exclamation-triangle me-2"></i>
+                      <strong>Sin permisos asignados</strong>
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+
+              <!-- Tab: Estadísticas -->
+              <div class="tab-pane" role="tabpanel" id="tab-estadisticas">
+                <h6 class="section-title">
+                  <i class="fas fa-chart-bar me-2"></i>
+                  Métricas de Actividad y Rendimiento
+                </h6>
+
+                <!-- Loading state -->
+                <div *ngIf="loadingStats" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando estadísticas...</span>
+                  </div>
+                  <p class="text-muted mt-2">Cargando estadísticas...</p>
+                </div>
+
+                <div class="row g-3 mb-4" *ngIf="userStats && !loadingStats">
+                  <div class="col-md-3 col-sm-6">
+                    <div class="card border-primary">
+                      <div class="card-body text-center">
+                        <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                        <h6 class="card-title">Tiempo Promedio Respuesta</h6>
+                        <p class="card-text fs-4 fw-bold text-primary">{{ userStats.avgResponseTime | number:'1.1-1' }} min</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                    <div class="card border-success">
+                      <div class="card-body text-center">
+                        <i class="fas fa-sign-in-alt fa-2x text-success mb-2"></i>
+                        <h6 class="card-title">Último Login</h6>
+                        <p class="card-text fs-6 text-success">
+                          {{ userStats.lastLogin ? (userStats.lastLogin | date:'short') : 'Sin registro' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                    <div class="card border-warning">
+                      <div class="card-body text-center">
+                        <i class="fas fa-calendar-alt fa-2x text-warning mb-2"></i>
+                        <h6 class="card-title">Última Acción</h6>
+                        <p class="card-text fs-6 text-warning">{{ userStats.lastAction || 'Sin actividad' }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                    <div class="card border-info">
+                      <div class="card-body text-center">
+                        <i class="fas fa-bell fa-2x text-info mb-2"></i>
+                        <h6 class="card-title">Notificaciones Procesadas</h6>
+                        <p class="card-text fs-4 fw-bold text-info">{{ userStats.totalNotifications }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Segunda fila de métricas -->
+                <div class="row g-3 mb-4" *ngIf="userStats && !loadingStats">
+                  <div class="col-md-4 col-sm-6">
+                    <div class="card border-secondary">
+                      <div class="card-body text-center">
+                        <i class="fas fa-eye fa-2x text-secondary mb-2"></i>
+                        <h6 class="card-title">Vistas</h6>
+                        <p class="card-text fs-4 fw-bold text-secondary">{{ userStats.viewedCount || 0 }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 col-sm-6">
+                    <div class="card border-success">
+                      <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h6 class="card-title">Atendidas</h6>
+                        <p class="card-text fs-4 fw-bold text-success">{{ userStats.attendedCount || 0 }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 col-sm-6">
+                    <div class="card border-danger">
+                      <div class="card-body text-center">
+                        <i class="fas fa-hourglass-half fa-2x text-danger mb-2"></i>
+                        <h6 class="card-title">Pendientes</h6>
+                        <p class="card-text fs-4 fw-bold text-danger">{{ userStats.pendingCount || 0 }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row g-3" *ngIf="userStats && !loadingStats">
+                  <div class="col-md-6">
+                    <div class="card">
+                      <div class="card-header bg-light">
+                        <i class="fas fa-percentage me-2"></i>
+                        Tasa de Cumplimiento
+                      </div>
+                      <div class="card-body">
+                        <div class="progress" style="height: 30px;">
+                          <div class="progress-bar"
+                               [class.bg-success]="userStats?.complianceRate >= 80"
+                               [class.bg-warning]="userStats?.complianceRate >= 50 && userStats?.complianceRate < 80"
+                               [class.bg-danger]="userStats?.complianceRate < 50"
+                               role="progressbar"
+                               [style.width.%]="userStats?.complianceRate || 0"
+                               [attr.aria-valuenow]="userStats?.complianceRate"
+                               aria-valuemin="0"
+                               aria-valuemax="100">
+                            {{ userStats?.complianceRate || 0 }}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card">
+                      <div class="card-header bg-light">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Eficiencia Horaria
+                      </div>
+                      <div class="card-body">
+                        <div class="progress" style="height: 30px;">
+                          <div class="progress-bar bg-info"
+                               role="progressbar"
+                               [style.width.%]="userStats?.hourlyEfficiency || 0"
+                               [attr.aria-valuenow]="userStats?.hourlyEfficiency"
+                               aria-valuemin="0"
+                               aria-valuemax="100">
+                            {{ userStats?.hourlyEfficiency || 0 }}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="alert alert-info mt-4" *ngIf="userStats && !loadingStats">
+                  <h6><i class="fas fa-lightbulb me-2"></i>Sugerencias de Mejora</h6>
+                  <ul class="mb-0">
+                    <li *ngFor="let suggestion of userStats?.suggestions || []">{{ suggestion }}</li>
+                    <li *ngIf="!userStats?.suggestions || userStats.suggestions.length === 0">No hay sugerencias disponibles en este momento.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plantilla para el estado de carga -->
+          <ng-template #loading>
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+              <p class="text-muted">Cargando información del usuario...</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

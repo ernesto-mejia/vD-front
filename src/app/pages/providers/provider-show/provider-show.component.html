@@ -1,0 +1,1245 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+          >
+            <div class="flex-grow-1">
+              <h5 class="mb-0">
+                <i class="fas fa-truck me-2"></i>Detalles del Proveedor
+              </h5>
+              <small class="opacity-75" *ngIf="company?.shortname">
+                {{ company?.shortname }} - {{ company?.id }}
+              </small>
+            </div>
+            <div class="btn-group" role="group">
+              <button
+                class="btn btn-outline-light btn-sm"
+                (click)="goBack()"
+                type="button"
+              >
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button
+                class="btn btn-warning btn-sm"
+                (click)="goToEdit()"
+                type="button"
+              >
+                <i class="fas fa-edit me-1"></i>Editar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                [class.active]="activeTab === 'info'"
+                (click)="setActiveTab('info')"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'info'"
+              >
+                <i class="fas fa-info-circle me-1"></i>Información General
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                [class.active]="activeTab === 'contacts'"
+                (click)="setActiveTab('contacts')"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'contacts'"
+              >
+                <i class="fas fa-users me-1"></i>Contactos
+                <span class="badge bg-secondary ms-1">{{
+                  contactos.length
+                }}</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                [class.active]="activeTab === 'addresses'"
+                (click)="setActiveTab('addresses')"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'addresses'"
+              >
+                <i class="fas fa-map-marker-alt me-1"></i>Direcciones
+                <span class="badge bg-secondary ms-1">{{
+                  direcciones.length
+                }}</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                [class.active]="activeTab === 'taxData'"
+                (click)="setActiveTab('taxData')"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'taxData'"
+                aria-label="Datos Fiscales"
+              >
+                <i class="fas fa-receipt me-1"></i>
+                Datos Fiscales
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                [class.active]="activeTab === 'documents'"
+                (click)="setActiveTab('documents')"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'documents'"
+                aria-label="Documentos"
+              >
+                <i class="fas fa-file-alt me-1"></i>
+                Documentos
+                <span class="badge bg-secondary ms-1">{{
+                  documentos.length
+                }}</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation" *ngIf="hasContracts()">
+              <button
+                class="nav-link"
+                [class.active]="activeTab === 'contracts'"
+                (click)="setActiveTab('contracts')"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'contracts'"
+                aria-label="Contratos"
+              >
+                <i class="fas fa-file-contract me-1"></i>
+                Contratos
+                <span class="badge bg-secondary ms-1">{{
+                  contratos.length
+                }}</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <div
+              *ngIf="activeTab === 'info'"
+              class="tab-pane fade show active"
+              role="tabpanel"
+            >
+              <h6 class="section-title">
+                <i class="fas fa-building me-2"></i>
+                Información General del Proveedor
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6 col-lg-4">
+                  <div class="info-item">
+                    <label class="field-label">Razón Social</label>
+                    <div class="field-value">
+                      {{ company?.company || "No especificado" }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="info-item">
+                    <label class="field-label">Nombre comercial</label>
+                    <div class="field-value">
+                      {{ company?.shortname || "No especificado" }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="info-item">
+                    <label class="field-label">RFC</label>
+                    <div class="field-value">
+                      {{ company?.tax_id || "No especificado" }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <div class="info-item">
+                    <label class="field-label">Website</label>
+                    <div class="field-value">
+                      <a
+                        *ngIf="company?.website"
+                        [href]="company?.website"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-primary"
+                      >
+                        <i class="fas fa-external-link-alt me-1"></i>
+                        {{ company?.website }}
+                      </a>
+                      <span *ngIf="!company?.website">No especificado</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="info-item">
+                    <label class="field-label">Tipos de Proveedor</label>
+                    <div class="field-value">
+                      <div
+                        *ngIf="
+                          !getScopeLabels() || getScopeLabels().length === 0
+                        "
+                        class="text-muted"
+                      >
+                        <small>No especificado</small>
+                      </div>
+                      <div
+                        *ngIf="getScopeLabels() && getScopeLabels().length > 0"
+                      >
+                        <div
+                          *ngFor="let label of getScopeLabels()"
+                          class="badge bg-info me-1 mb-1"
+                        >
+                          {{ label }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              *ngIf="activeTab === 'contacts'"
+              class="tab-pane fade show active"
+              role="tabpanel"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h6 class="section-title mb-0">
+                  <i class="fas fa-users me-2"></i>
+                  Lista de Contactos
+                </h6>
+                <span class="badge bg-primary"
+                  >{{ contactos.length }} contacto(s)</span
+                >
+              </div>
+              <div *ngIf="contactos.length === 0" class="empty-state">
+                <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                <p class="text-muted mb-0">No hay contactos registrados</p>
+              </div>
+              <div class="row g-3">
+                <div
+                  *ngFor="let contacto of contactos"
+                  class="col-lg-6 col-xl-4"
+                >
+                  <div class="card h-100 contact-card">
+                    <div
+                      class="card-header bg-light d-flex justify-content-between align-items-center"
+                    >
+                      <h6
+                        class="mb-0 text-truncate"
+                        [title]="getContactFullName(contacto)"
+                      >
+                        {{ getContactFullName(contacto) }}
+                      </h6>
+                    </div>
+                    <div class="card-body">
+                      <div class="info-item mb-2">
+                        <label class="field-label small">Puesto</label>
+                        <div class="field-value">
+                          {{
+                            contacto.contact_job_position || "No especificado"
+                          }}
+                        </div>
+                      </div>
+                      <div class="info-item mb-2">
+                        <label class="field-label small">Departamento</label>
+                        <div class="field-value">
+                          {{ contacto.contact_department || "No especificado" }}
+                        </div>
+                      </div>
+                      <div class="info-item mb-2">
+                        <label class="field-label small">Teléfono</label>
+                        <div class="field-value">
+                          <i class="fas fa-phone text-muted me-1"></i>
+                          <span *ngIf="contacto.contact_lada"
+                            >({{ contacto.contact_lada }})
+                          </span>
+                          <a
+                            *ngIf="contacto.contact_phone"
+                            [href]="
+                              'tel:' +
+                              (contacto.contact_lada || '') +
+                              contacto.contact_phone
+                            "
+                            class="text-decoration-none"
+                          >
+                            {{ contacto.contact_phone }}
+                          </a>
+                          <span *ngIf="!contacto.contact_phone"
+                            >No especificado</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        class="info-item mb-2"
+                        *ngIf="contacto.contact_extension"
+                      >
+                        <label class="field-label small">Extensión</label>
+                        <div class="field-value">
+                          <i class="fas fa-hashtag text-muted me-1"></i>
+                          {{ contacto.contact_extension }}
+                        </div>
+                      </div>
+                      <div class="info-item mb-0">
+                        <label class="field-label small">Email</label>
+                        <div class="field-value">
+                          <i class="fas fa-envelope text-muted me-1"></i>
+                          <a
+                            *ngIf="contacto.contact_email"
+                            [href]="'mailto:' + contacto.contact_email"
+                            class="text-decoration-none text-truncate d-inline-block obs-truncate-200"
+                            [title]="contacto.contact_email"
+                          >
+                            {{ contacto.contact_email }}
+                          </a>
+                          <span *ngIf="!contacto.contact_email"
+                            >No especificado</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              *ngIf="activeTab === 'addresses'"
+              class="tab-pane fade show active"
+              role="tabpanel"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h6 class="section-title mb-0">
+                  <i class="fas fa-map-marker-alt me-2"></i>
+                  Direcciones Registradas
+                </h6>
+                <div class="d-flex gap-2 align-items-center">
+                  <span class="badge bg-primary"
+                    >{{ direcciones.length }} dirección(es)</span
+                  >
+                </div>
+              </div>
+
+              <div *ngIf="direcciones.length === 0" class="empty-state">
+                <i class="fas fa-map-marker-alt fa-3x mb-3 text-muted"></i>
+                <p class="text-muted mb-3">No hay direcciones registradas</p>
+              </div>
+
+              <div *ngIf="direcciones.length > 0" class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nombre Corto</th>
+                      <th>Dirección</th>
+                      <th>Ciudad</th>
+                      <th>Estado</th>
+                      <th>País</th>
+                      <th>Código Postal</th>
+                      <th>Contactos</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let direccion of direcciones">
+                      <td>
+                        <strong>{{ direccion.shortname }}</strong>
+                      </td>
+                      <td>
+                        <span
+                          class="obs-truncate-250"
+                          [title]="direccion.address"
+                        >
+                          {{ direccion.address }}
+                        </span>
+                      </td>
+                      <td>{{ direccion.city || "N/A" }}</td>
+                      <td>{{ direccion.state || "N/A" }}</td>
+                      <td>{{ direccion.country || "N/A" }}</td>
+                      <td>{{ direccion.zipcode || "N/A" }}</td>
+                      <td>
+                        <span class="badge bg-info">
+                          {{ direccion.contact_addresses.length || 0 }}
+                          contacto(s)
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <div class="btn-group" role="group">
+                          <button
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="viewAddress(direccion)"
+                            title="Ver dirección"
+                          >
+                            <i class="fas fa-eye"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div
+              *ngIf="activeTab === 'taxData'"
+              class="tab-pane fade show active"
+              role="tabpanel"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h6 class="section-title mb-0">
+                  <i class="fas fa-receipt me-2"></i>
+                  Datos Fiscales - Cumplimiento
+                </h6>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Régimen Fiscal</th>
+                          <th>CFDI Preferido</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <div class="info-item">
+                              <div class="field-value">
+                                {{
+                                  company?.tax_regime?.display ||
+                                    "No especificado"
+                                }}
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="info-item">
+                              <div class="field-value">
+                                {{
+                                  company?.tax_preferred_concept?.display ||
+                                    "No especificado"
+                                }}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="info-item">
+                        <label class="field-label"
+                          >Estado de Cumplimiento</label
+                        >
+                        <div class="field-value">
+                          <span
+                            class="badge"
+                            [ngClass]="getComplianceStatusClass()"
+                            >{{ getComplianceStatusText() }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info-item">
+                        <label class="field-label">Última Actualización</label>
+                        <div class="field-value">{{ getLastUpdateDate() }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Dirección Fiscal -->
+                  <div *ngIf="tax_address" class="mt-4">
+                    <h6 class="section-title">
+                      <i class="fas fa-map-marker-alt me-2"></i>
+                      Dirección Fiscal
+                    </h6>
+                    <div class="card bg-light">
+                      <div class="card-body">
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <div class="info-item">
+                              <label class="field-label">Nombre Corto</label>
+                              <div class="field-value">
+                                {{ tax_address.shortname || "N/A" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="info-item">
+                              <label class="field-label">País</label>
+                              <div class="field-value">
+                                {{ tax_address.country || "No especificado" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-12">
+                            <div class="info-item">
+                              <label class="field-label"
+                                >Dirección Completa</label
+                              >
+                              <div class="field-value">
+                                {{ tax_address.address || "No especificada" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Calle</label>
+                              <div class="field-value">
+                                {{ tax_address.street || "No especificado" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Número Exterior</label>
+                              <div class="field-value">
+                                {{ tax_address.outside_number || "N/A" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Número Interior</label>
+                              <div class="field-value">
+                                {{ tax_address.inside_number || "N/A" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Ciudad</label>
+                              <div class="field-value">
+                                {{ tax_address.city || "No especificado" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Estado</label>
+                              <div class="field-value">
+                                {{ tax_address.state || "No especificado" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Código Postal</label>
+                              <div class="field-value">
+                                {{ tax_address.zipcode || "N/A" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label">Colonia</label>
+                              <div class="field-value">
+                                {{ tax_address.county || "No especificado" }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="info-item">
+                              <label class="field-label"
+                                >Municipio/Alcaldía</label
+                              >
+                              <div class="field-value">
+                                {{
+                                  tax_address.municipality || "No especificado"
+                                }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="!tax_address" class="mt-4">
+                    <div class="alert alert-info" role="alert">
+                      <i class="fas fa-info-circle me-2"></i>
+                      No se ha registrado una dirección fiscal para este
+                      proveedor.
+                    </div>
+                  </div>
+
+                  <!-- Documentos de Cumplimiento (Solo Lectura) -->
+                  <div class="mt-4">
+                    <h6 class="section-title">
+                      <i class="fas fa-file-upload me-2"></i>
+                      Documentos de Cumplimiento
+                      <span
+                        class="badge bg-secondary ms-2"
+                        *ngIf="requiredDocuments.length > 0"
+                      >
+                        {{ getDocumentCompliancePercentage() }}% completado
+                      </span>
+                      <span
+                        *ngIf="areAllDocumentsComplete()"
+                        class="badge bg-success ms-1"
+                      >
+                        <i class="fas fa-check-circle"></i>
+                      </span>
+                    </h6>
+
+                    <!-- Loading -->
+                    <div *ngIf="loadingDocuments" class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                      </div>
+                    </div>
+
+                    <!-- Documentos -->
+                    <div
+                      class="row g-3"
+                      *ngIf="!loadingDocuments && requiredDocuments.length > 0"
+                    >
+                      <div
+                        *ngFor="let doc of requiredDocuments"
+                        class="col-md-4 col-lg-3"
+                      >
+                        <div
+                          class="card h-100"
+                          [ngClass]="{
+                            'border-success': doc.status === 'complete',
+                            'border-warning': doc.status !== 'complete'
+                          }"
+                        >
+                          <div class="card-body text-center p-3">
+                            <i
+                              class="fas fa-2x mb-2"
+                              [ngClass]="
+                                doc.status === 'complete'
+                                  ? 'fa-file-check text-success'
+                                  : 'fa-file-alt text-warning'
+                              "
+                            ></i>
+                            <h6 class="card-title small mb-2">
+                              {{ doc.document_type || "Documento" }}
+                            </h6>
+                            <span
+                              class="badge"
+                              [ngClass]="
+                                doc.status === 'complete'
+                                  ? 'bg-success'
+                                  : 'bg-warning'
+                              "
+                            >
+                              {{
+                                doc.status === "complete"
+                                  ? "Cargado"
+                                  : "Pendiente"
+                              }}
+                            </span>
+                            <div class="mt-2" *ngIf="doc.file_url">
+                              <a
+                                [href]="doc.file_url"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-info"
+                              >
+                                <i class="fas fa-eye me-1"></i> Ver
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Sin documentos -->
+                    <div
+                      *ngIf="
+                        !loadingDocuments && requiredDocuments.length === 0
+                      "
+                      class="alert alert-light text-center"
+                    >
+                      <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                      <p class="text-muted mb-0">
+                        No hay documentos de cumplimiento configurados.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              *ngIf="activeTab === 'documents'"
+              class="tab-pane fade show active"
+              role="tabpanel"
+            >
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h6 class="section-title mb-0">
+                  <i class="fas fa-file-alt me-2"></i>Documentos
+                </h6>
+                <span class="badge bg-primary"
+                  >{{ documentos.length }} documento(s)</span
+                >
+              </div>
+              <div *ngIf="documentos.length === 0" class="empty-state">
+                <i class="fas fa-file-alt fa-3x mb-3 text-muted"></i>
+                <p class="text-muted mb-0">No hay documentos registrados</p>
+              </div>
+              <div class="table-responsive" *ngIf="documentos.length > 0">
+                <table class="table table-striped table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Número</th>
+                      <th>Tipo</th>
+                      <th>Fecha</th>
+                      <th>Estado</th>
+                      <th>Total</th>
+                      <th>Referencia</th>
+                      <th>Observaciones</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let doc of documentos">
+                      <td>{{ doc.document_number || "N/A" }}</td>
+                      <td>{{ doc.document_type }}</td>
+                      <td>{{ doc.document_date | date : "dd/MM/yyyy" }}</td>
+                      <td>
+                        <span
+                          [class]="
+                            'badge ' +
+                            getDocumentStatusClass(doc.document_status)
+                          "
+                          >{{ doc.document_status }}</span
+                        >
+                      </td>
+                      <td class="text-end">
+                        {{
+                          doc.total
+                            | currency : "MXN" : "symbol-narrow" : "1.2-2"
+                        }}
+                      </td>
+                      <td>{{ doc.reference_number || "N/A" }}</td>
+                      <td>
+                        <span
+                          class="text-truncate d-inline-block obs-truncate-200"
+                          [title]="doc.observations || 'N/A'"
+                          >{{ doc.observations || "N/A" }}</span
+                        >
+                      </td>
+                      <td class="text-center">
+                        <button
+                          class="btn btn-primary btn-sm"
+                          (click)="viewDocument(doc)"
+                          title="Ver documento"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para direcciones -->
+    <div
+      class="modal fade"
+      [class.show]="showAddressModal"
+      [style.display]="showAddressModal ? 'block' : 'none'"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="addressModalLabel"
+      [attr.aria-hidden]="!showAddressModal"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addressModalLabel">
+              <i class="fas fa-map-marker-alt me-2"></i>
+              <span *ngIf="modalMode === 'view'">Detalles de Dirección</span>
+              <span *ngIf="modalMode === 'edit'">Editar Dirección</span>
+              <span *ngIf="modalMode === 'create'">Nueva Dirección</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              (click)="closeAddressModal()"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" *ngIf="selectedAddress">
+            <form>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="addressShortname" class="form-label"
+                    >Nombre Corto *</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressShortname"
+                    [(ngModel)]="selectedAddress.shortname"
+                    name="shortname"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Ej: Oficina Central"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="addressCountry" class="form-label">País</label>
+                  <select
+                    class="form-select"
+                    id="addressCountry"
+                    [(ngModel)]="selectedAddress.country"
+                    name="country"
+                    [disabled]="modalMode === 'view'"
+                  >
+                    <option value="MX">México</option>
+                    <option value="US">Estados Unidos</option>
+                    <option value="CA">Canadá</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="addressFull" class="form-label"
+                    >Dirección Completa *</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="addressFull"
+                    rows="2"
+                    [(ngModel)]="selectedAddress.address"
+                    name="address"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Dirección completa..."
+                  ></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label for="addressStreet" class="form-label">Calle</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressStreet"
+                    [(ngModel)]="selectedAddress.street"
+                    name="street"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Nombre de la calle"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <label for="addressOutside" class="form-label"
+                    >Número Exterior</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressOutside"
+                    [(ngModel)]="selectedAddress.outside_number"
+                    name="outside_number"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="123"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <label for="addressInside" class="form-label"
+                    >Número Interior</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressInside"
+                    [(ngModel)]="selectedAddress.inside_number"
+                    name="inside_number"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="A"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="addressCity" class="form-label">Ciudad</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressCity"
+                    [(ngModel)]="selectedAddress.city"
+                    name="city"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Ciudad"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="addressState" class="form-label">Estado</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressState"
+                    [(ngModel)]="selectedAddress.state"
+                    name="state"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Estado"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="addressZipcode" class="form-label"
+                    >Código Postal</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressZipcode"
+                    [(ngModel)]="selectedAddress.zipcode"
+                    name="zipcode"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="12345"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="addressCounty" class="form-label"
+                    >Alcaldía/Municipio</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="addressCounty"
+                    [(ngModel)]="selectedAddress.municipality"
+                    name="municipality"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Alcaldía"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="addressNeighborhood" class="form-label"
+                  >Colonia</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addressNeighborhood"
+                  [(ngModel)]="selectedAddress.colony"
+                  name="colony"
+                  [readonly]="modalMode === 'view'"
+                  placeholder="Colonia"
+                />
+              </div>
+              <!-- Contactos asociados a la dirección -->
+              <div class="mt-4">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <h6 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Contactos en esta Dirección
+                  </h6>
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    (click)="createContact()"
+                    *ngIf="modalMode !== 'view'"
+                  >
+                    <i class="fas fa-plus me-1"></i>
+                    Agregar Contacto
+                  </button>
+                </div>
+
+                <div
+                  *ngIf="selectedAddress.contact_addresses.length === 0"
+                  class="text-center py-3 text-muted"
+                >
+                  <i class="fas fa-users fa-2x mb-2"></i>
+                  <p class="mb-0">
+                    No hay contactos asociados a esta dirección
+                  </p>
+                </div>
+
+                <div
+                  *ngIf="selectedAddress.contact_addresses.length > 0"
+                  class="table-responsive"
+                >
+                  <table class="table table-sm">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Nombre</th>
+                        <th>Lada</th>
+                        <th>Teléfono</th>
+                        <th>Ext.</th>
+                        <th>Email</th>
+                        <th>Puesto</th>
+                        <th *ngIf="modalMode !== 'view'" class="text-center">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="
+                          let contact of selectedAddress.contact_addresses
+                        "
+                      >
+                        <td>{{ getContactAddressFullName(contact) }}</td>
+                        <td>{{ contact.contact_lada || "-" }}</td>
+                        <td>{{ contact.contact_phone || "N/A" }}</td>
+                        <td>{{ contact.contact_extension || "-" }}</td>
+                        <td>{{ contact.contact_email || "N/A" }}</td>
+                        <td>{{ contact.contact_job_position || "N/A" }}</td>
+                        <td *ngIf="modalMode !== 'view'" class="text-center">
+                          <div class="btn-group btn-group-sm">
+                            <button
+                              type="button"
+                              class="btn btn-outline-primary"
+                              (click)="viewContact(contact)"
+                              title="Ver"
+                            >
+                              <i class="fas fa-eye"></i>
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-outline-warning"
+                              (click)="editContact(contact)"
+                              title="Editar"
+                            >
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-outline-danger"
+                              (click)="deleteContact(contact)"
+                              title="Eliminar"
+                            >
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="closeAddressModal()"
+            >
+              <i class="fas fa-times me-1"></i>
+              {{ modalMode === "view" ? "Cerrar" : "Cancelar" }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="saveAddress()"
+              *ngIf="modalMode !== 'view'"
+            >
+              <i class="fas fa-save me-1"></i>
+              {{
+                modalMode === "create" ? "Crear Dirección" : "Guardar Cambios"
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para contactos de direcciones -->
+    <div
+      class="modal fade"
+      [class.show]="showContactModal"
+      [style.display]="showContactModal ? 'block' : 'none'"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="contactModalLabel"
+      [attr.aria-hidden]="!showContactModal"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="contactModalLabel">
+              <i class="fas fa-user me-2"></i>
+              <span *ngIf="modalMode === 'view'">Detalles de Contacto</span>
+              <span *ngIf="modalMode === 'edit'">Editar Contacto</span>
+              <span *ngIf="modalMode === 'create'">Nuevo Contacto</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              (click)="closeContactModal()"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" *ngIf="selectedContact">
+            <form>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="contactName" class="form-label">Nombre *</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contactName"
+                    [(ngModel)]="selectedContact.contact_name_address"
+                    name="contact_name_address"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Nombre"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="contactLastname" class="form-label"
+                    >Apellido *</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contactLastname"
+                    [(ngModel)]="selectedContact.contact_lastname_address"
+                    name="contact_lastname_address"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Apellido"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <label for="contactLada" class="form-label">Lada</label>
+                  <select
+                    class="form-select"
+                    id="contactLada"
+                    [(ngModel)]="selectedContact.contact_lada"
+                    name="contact_lada"
+                    [disabled]="modalMode === 'view'"
+                  >
+                    <option [ngValue]="undefined">Seleccionar</option>
+                    <option
+                      *ngFor="let code of phoneCodes"
+                      [value]="code.value"
+                    >
+                      {{ code.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label for="contactPhone" class="form-label">Teléfono</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="contactPhone"
+                    [(ngModel)]="selectedContact.contact_phone"
+                    name="contact_phone"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="1234567890"
+                    maxlength="10"
+                    (keypress)="
+                      ($event.charCode >= 48 && $event.charCode <= 57)
+                    "
+                    (input)="onlyNumbers($event)"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <label for="contactExtension" class="form-label">Ext.</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contactExtension"
+                    [(ngModel)]="selectedContact.contact_extension"
+                    name="contact_extension"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="101"
+                    maxlength="6"
+                    (keypress)="
+                      ($event.charCode >= 48 && $event.charCode <= 57)
+                    "
+                    (input)="onlyNumbers($event)"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="contactEmail" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="contactEmail"
+                    [(ngModel)]="selectedContact.contact_email"
+                    name="contact_email"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="contacto@ejemplo.com"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="contactPosition" class="form-label">Puesto</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contactPosition"
+                    [(ngModel)]="selectedContact.contact_job_position"
+                    name="contact_job_position"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Puesto de trabajo"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="contactDepartment" class="form-label"
+                    >Departamento</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="contactDepartment"
+                    [(ngModel)]="selectedContact.contact_department"
+                    name="contact_department"
+                    [readonly]="modalMode === 'view'"
+                    placeholder="Departamento"
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="closeContactModal()"
+            >
+              <i class="fas fa-times me-1"></i>
+              {{ modalMode === "view" ? "Cerrar" : "Cancelar" }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="saveContact()"
+              *ngIf="modalMode !== 'view'"
+            >
+              <i class="fas fa-save me-1"></i>
+              {{
+                modalMode === "create" ? "Crear Contacto" : "Guardar Cambios"
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop para modales -->
+    <div
+      class="modal-backdrop fade"
+      [class.show]="showAddressModal || showContactModal"
+      *ngIf="showAddressModal || showContactModal"
+    ></div>
+  </div>
+</main>

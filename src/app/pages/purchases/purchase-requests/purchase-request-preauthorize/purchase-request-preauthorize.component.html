@@ -1,0 +1,402 @@
+<app-sidebar></app-sidebar>
+<main class="main-content">
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <button class="btn btn-link text-muted p-0 me-3" (click)="goBack()">
+              <i class="bi bi-arrow-left fs-5"></i>
+            </button>
+            <div>
+              <h4 class="mb-1">
+                <i class="bi bi-clipboard-check text-primary me-2"></i>
+                Orden de Compra - Asignación de Proveedores
+              </h4>
+              <p class="text-muted mb-0" *ngIf="request">
+                {{ request.request_number }} - {{ request.title }}
+              </p>
+            </div>
+          </div>
+          <div *ngIf="request">
+            <span class="badge fs-6" [ngClass]="'bg-' + (request.status?.color || 'secondary')">
+              <i class="bi" [ngClass]="request.status?.icon || 'bi-circle'"></i>
+              {{ request.status?.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loadingRequest" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2 text-muted">Cargando solicitud...</p>
+    </div>
+
+    <!-- Contenido -->
+    <div *ngIf="!loadingRequest && request">
+      <form [formGroup]="form">
+        <div class="row">
+          <!-- Columna Principal -->
+          <div class="col-lg-8">
+            <!-- Info de la Solicitud -->
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información de la Solicitud</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="text-muted small">Solicitante</label>
+                    <p class="mb-0 fw-semibold">{{ request.requester?.name }}</p>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="text-muted small">Fecha Solicitud</label>
+                    <p class="mb-0">{{ request.request_date | date:'dd/MM/yyyy' }}</p>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="text-muted small">Fecha Requerida</label>
+                    <p class="mb-0">{{ request.required_date | date:'dd/MM/yyyy' }}</p>
+                  </div>
+                  <div class="col-12">
+                    <label class="text-muted small">Descripción</label>
+                    <p class="mb-0">{{ request.description || 'Sin descripción' }}</p>
+                  </div>
+                  <div class="col-md-6" *ngIf="request.contract">
+                    <label class="text-muted small">Contrato Relacionado</label>
+                    <p class="mb-0">
+                      <i class="bi bi-file-earmark-text me-1"></i>
+                      {{ request.contract.contract_number }}
+                    </p>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="text-muted small">Prioridad</label>
+                    <p class="mb-0">
+                      <span class="badge" [ngClass]="'bg-' + purchaseRequestService.getPriorityColor(request.priority)">
+                        {{ purchaseRequestService.getPriorityLabel(request.priority) }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selección de Proveedor Global (para items sin proveedor específico) -->
+            <div class="card shadow-sm mb-4" *ngIf="canPreAuthorize()">
+              <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-building me-2"></i>Proveedor Global (Opcional)</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-8">
+                    <label class="form-label">Proveedor por defecto</label>
+                    <select class="form-select" formControlName="provider_id">
+                      <option [ngValue]="null">Sin proveedor global...</option>
+                      <option *ngFor="let provider of providers" [value]="provider.id">
+                        {{ provider.name }} ({{ provider.rfc }})
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="alert alert-info mb-0 py-2">
+                      <small><i class="bi bi-info-circle me-1"></i>Se usará para items sin proveedor específico</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Items a Revisar -->
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-list-check me-2"></i>Items a Revisar</h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="ps-3">Artículo</th>
+                        <th>Proveedor</th>
+                        <th>Cantidad</th>
+                        <th>P. Unitario</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th class="text-end pe-3" *ngIf="canPreAuthorize()">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="items">
+                      <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i"
+                          [class.table-danger]="item.get('review_status')?.value === 'rejected'"
+                          [class.table-warning]="item.get('review_status')?.value === 'needs_integration'">
+                        <td class="ps-3">
+                          <div class="d-flex align-items-start">
+                            <span class="badge bg-warning me-2" *ngIf="item.get('is_manual_item')?.value" title="Item manual">
+                              <i class="bi bi-pencil-square"></i>
+                            </span>
+                            <div>
+                              <strong>{{ item.get('item_name')?.value }}</strong>
+                              <small class="text-muted d-block" *ngIf="item.get('item_description')?.value">
+                                {{ item.get('item_description')?.value }}
+                              </small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <!-- Selector de proveedor por item -->
+                          <ng-container *ngIf="canPreAuthorize()">
+                            <!-- Cargando proveedores -->
+                            <span *ngIf="isLoadingItemProviders(i)" class="text-muted">
+                              <span class="spinner-border spinner-border-sm me-1"></span>
+                              Cargando...
+                            </span>
+
+                            <!-- Item con proveedor desde contrato (preseleccionado) -->
+                            <div *ngIf="!isLoadingItemProviders(i) && hasContractProvider(i)" class="d-flex gap-1 align-items-center">
+                              <span class="badge bg-success me-1" title="Proveedor del contrato">
+                                <i class="bi bi-file-earmark-check me-1"></i>Contrato
+                              </span>
+                              <select class="form-select form-select-sm"
+                                      formControlName="provider_id"
+                                      (change)="onItemProviderChange(i)"
+                                      style="min-width: 150px;">
+                                <!-- Opción del proveedor del contrato -->
+                                <option [value]="item.get('contract_provider_id')?.value">
+                                  {{ item.get('provider_name')?.value }}
+                                  <ng-container *ngIf="item.get('contract_price')?.value"> - ${{ item.get('contract_price')?.value | number:'1.2-2' }}</ng-container>
+                                </option>
+                                <!-- Otros proveedores disponibles -->
+                                <optgroup label="Otros proveedores" *ngIf="getItemProviders(i).length > 0">
+                                  <option *ngFor="let supplier of getItemProviders(i)"
+                                          [value]="supplier.id"
+                                          [hidden]="supplier.id === item.get('contract_provider_id')?.value">
+                                    {{ supplier.name }}
+                                    <ng-container *ngIf="supplier.price"> - ${{ supplier.price | number:'1.2-2' }}</ng-container>
+                                  </option>
+                                </optgroup>
+                              </select>
+                            </div>
+
+                            <!-- Item con proveedores del catálogo (sin proveedor de contrato) -->
+                            <div *ngIf="!isLoadingItemProviders(i) && !hasContractProvider(i) && hasItemProviders(i)" class="d-flex gap-1">
+                              <select class="form-select form-select-sm"
+                                      formControlName="provider_id"
+                                      (change)="onItemProviderChange(i)"
+                                      style="min-width: 150px;">
+                                <option [ngValue]="null">Seleccione...</option>
+                                <option *ngFor="let supplier of getItemProviders(i)" [value]="supplier.id">
+                                  {{ supplier.name }}
+                                  <ng-container *ngIf="supplier.price"> - ${{ supplier.price | number:'1.2-2' }}</ng-container>
+                                  <ng-container *ngIf="supplier.is_preferred"> ⭐</ng-container>
+                                </option>
+                              </select>
+                              <button type="button" class="btn btn-outline-primary btn-sm"
+                                      (click)="addQuickSupplier(i)" title="Agregar nuevo proveedor"
+                                      *ngIf="isFromCatalog(i)">
+                                <i class="bi bi-plus"></i>
+                              </button>
+                            </div>
+
+                            <!-- Item del catálogo sin proveedores - mostrar botón para agregar -->
+                            <div *ngIf="!isLoadingItemProviders(i) && !hasContractProvider(i) && !hasItemProviders(i) && isFromCatalog(i)" class="d-flex align-items-center gap-2">
+                              <span class="text-warning small">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Sin proveedores
+                              </span>
+                              <button type="button" class="btn btn-primary btn-sm" (click)="addQuickSupplier(i)">
+                                <i class="bi bi-plus-circle me-1"></i>Agregar
+                              </button>
+                            </div>
+
+                            <!-- Item manual sin proveedores (usa proveedor global) -->
+                            <span *ngIf="!isLoadingItemProviders(i) && !hasContractProvider(i) && !hasItemProviders(i) && !isFromCatalog(i)" class="text-muted small">
+                              <i class="bi bi-arrow-up me-1"></i>
+                              Usa proveedor global
+                            </span>
+                          </ng-container>
+
+                          <!-- Modo solo lectura -->
+                          <span *ngIf="!canPreAuthorize()">
+                            {{ item.get('provider_name')?.value || 'Sin proveedor' }}
+                          </span>
+                        </td>
+                        <td>
+                          {{ item.get('quantity')?.value }} {{ item.get('unit_of_measurement')?.value }}
+                        </td>
+                        <td>
+                          <div class="input-group input-group-sm" style="width: 120px;" *ngIf="canPreAuthorize()">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" formControlName="unit_price"
+                                   min="0" step="0.01" (change)="onPriceChange()">
+                          </div>
+                          <span *ngIf="!canPreAuthorize()">{{ formatCurrency(item.get('unit_price')?.value) }}</span>
+                        </td>
+                        <td class="fw-semibold">
+                          {{ formatCurrency(getItemLineTotal(i)) }}
+                        </td>
+                        <td>
+                          <span class="badge" [ngClass]="getStatusBadgeClass(item.get('review_status')?.value)">
+                            {{ getStatusLabel(item.get('review_status')?.value) }}
+                          </span>
+                          <small class="d-block text-muted" *ngIf="item.get('review_notes')?.value">
+                            {{ item.get('review_notes')?.value }}
+                          </small>
+                        </td>
+                        <td class="text-end pe-3" *ngIf="canPreAuthorize()">
+                          <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-success"
+                                    (click)="setItemStatus(i, 'approved')"
+                                    [class.active]="item.get('review_status')?.value === 'approved'"
+                                    title="Aprobar">
+                              <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning"
+                                    (click)="setItemStatus(i, 'needs_integration')"
+                                    [class.active]="item.get('review_status')?.value === 'needs_integration'"
+                                    title="Requiere Integración">
+                              <i class="bi bi-puzzle"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger"
+                                    (click)="setItemStatus(i, 'rejected')"
+                                    [class.active]="item.get('review_status')?.value === 'rejected'"
+                                    title="Rechazar">
+                              <i class="bi bi-x-lg"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notas de Orden de Compra -->
+            <div class="card shadow-sm mb-4" *ngIf="canPreAuthorize()">
+              <div class="card-body">
+                <label class="form-label">Notas de Orden de Compra</label>
+                <textarea class="form-control" formControlName="notes" rows="3"
+                          placeholder="Notas opcionales para el solicitante..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Lateral -->
+          <div class="col-lg-4">
+            <!-- Resumen -->
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-calculator me-2"></i>Resumen</h6>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">Subtotal:</span>
+                  <span class="fw-semibold">{{ formatCurrency(calculatedTotals.subtotal) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">IVA (16%):</span>
+                  <span class="text-success">+ {{ formatCurrency(calculatedTotals.iva) }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                  <span class="fw-bold fs-5">Total:</span>
+                  <span class="fw-bold fs-5 text-primary">{{ formatCurrency(calculatedTotals.total) }}</span>
+                </div>
+              </div>
+              <div class="card-footer bg-transparent">
+                <!-- Botones según estado -->
+                <div class="d-grid gap-2">
+                  <!-- Modo asignación de proveedor (viene desde OC) -->
+                  <ng-container *ngIf="assignProviderMode">
+                    <button type="button" class="btn btn-success"
+                            (click)="saveProviderAssignment()" [disabled]="submitting || form.invalid">
+                      <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+                      <i *ngIf="!submitting" class="bi bi-check-circle me-2"></i>
+                      Guardar Asignación de Proveedores
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary" (click)="goBack()">
+                      Cancelar
+                    </button>
+                  </ng-container>
+
+                  <!-- Flujo normal (no viene desde OC) -->
+                  <ng-container *ngIf="!assignProviderMode">
+                    <!-- Si está en SUBMITTED - Poner en revisión -->
+                    <button type="button" class="btn btn-info"
+                            *ngIf="request.status?.code === 'SUBMITTED'"
+                            (click)="putInReview()" [disabled]="submitting">
+                      <i class="bi bi-eye me-2"></i>Poner en Revisión
+                    </button>
+
+                    <!-- Si puede pre-autorizar -->
+                    <ng-container *ngIf="canPreAuthorize()">
+                      <button type="button" class="btn btn-success"
+                              (click)="preAuthorize()" [disabled]="submitting || form.invalid">
+                        <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!submitting" class="bi bi-check-circle me-2"></i>
+                        Confirmar Orden de Compra
+                      </button>
+
+                      <button type="button" class="btn btn-warning"
+                              (click)="requestIntegration()" [disabled]="submitting">
+                        <i class="bi bi-puzzle me-2"></i>Solicitar Integración
+                      </button>
+
+                      <button type="button" class="btn btn-outline-secondary"
+                              (click)="returnForCorrections()" [disabled]="submitting">
+                        <i class="bi bi-arrow-return-left me-2"></i>Devolver
+                      </button>
+
+                      <button type="button" class="btn btn-outline-danger"
+                              (click)="reject()" [disabled]="submitting">
+                        <i class="bi bi-x-circle me-2"></i>Rechazar
+                      </button>
+                    </ng-container>
+
+                    <!-- Si está pre-autorizada - Convertir a OC -->
+                    <button type="button" class="btn btn-primary btn-lg"
+                            *ngIf="canConvertToPO()"
+                            (click)="convertToPO()" [disabled]="submitting">
+                      <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+                      <i *ngIf="!submitting" class="bi bi-file-earmark-plus me-2"></i>
+                      Generar Orden de Compra
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary" (click)="goBack()">
+                      Volver
+                    </button>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leyenda de estados -->
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h6 class="text-muted mb-3"><i class="bi bi-question-circle me-2"></i>Estados de Items</h6>
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge bg-success me-2">Aprobado</span>
+                  <small class="text-muted">Item incluido en la OC</small>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge bg-warning me-2">Integración</span>
+                  <small class="text-muted">Requiere agregar producto/proveedor</small>
+                </div>
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-danger me-2">Rechazado</span>
+                  <small class="text-muted">Item excluido de la OC</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>

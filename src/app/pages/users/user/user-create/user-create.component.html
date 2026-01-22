@@ -1,0 +1,130 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      <div class="card shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-user-plus me-2"></i>Crear Usuario
+            </h5>
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-light btn-sm" (click)="goBack()">
+                <i class="fas fa-arrow-left me-1"></i>Regresar
+              </button>
+              <button type="submit" class="btn btn-warning btn-sm" (click)="onRegister()">
+                <i class="fas fa-save me-1"></i>Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <form [formGroup]="userForm">
+            <!-- Sección: Credenciales -->
+            <div class="epica-form-section">
+              <h6 class="epica-form-section-title">
+                <i class="fas fa-lock me-2"></i>Credenciales de Acceso
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label"><span class="required-asterisk">*</span>Nombre de usuario</label>
+                  <input class="form-control" formControlName="user_name" maxlength="50" placeholder="usuario123">
+                  <div *ngIf="userForm.get('user_name')?.invalid && (userForm.get('user_name')?.dirty || userForm.get('user_name')?.touched)" class="invalid-feedback d-block">
+                    <div *ngIf="userForm.get('user_name')?.errors?.['required']">El nombre de usuario es obligatorio.</div>
+                    <div *ngIf="userForm.get('user_name')?.errors?.['maxlength']">No puede exceder 50 caracteres.</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label"><span class="required-asterisk">*</span>Contraseña</label>
+                  <div class="input-group">
+                    <input class="form-control" [type]="showPassword ? 'text' : 'password'" formControlName="password" maxlength="20" placeholder="••••••••">
+                    <button class="btn btn-outline-secondary" type="button" (click)="toggleShowPassword()" aria-label="Mostrar contraseña">
+                      <i [class]="showPassword ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="userForm.get('password')?.invalid && (userForm.get('password')?.dirty || userForm.get('password')?.touched)" class="invalid-feedback d-block">
+                    <div *ngIf="userForm.get('password')?.errors?.['required']">La contraseña es obligatoria.</div>
+                    <div *ngIf="userForm.get('password')?.errors?.['minlength']">Mínimo 8 caracteres.</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label"><span class="required-asterisk">*</span>Confirmar Contraseña</label>
+                  <div class="input-group">
+                    <input class="form-control" [type]="showPasswordConfirm ? 'text' : 'password'" formControlName="password_confirmation" maxlength="20" placeholder="••••••••">
+                    <button class="btn btn-outline-secondary" type="button" (click)="toggleShowPasswordConfirm()" aria-label="Mostrar confirmar contraseña">
+                      <i [class]="showPasswordConfirm ? 'far fa-eye-slash' : 'far fa-eye'"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="userForm.get('password_confirmation')?.invalid && (userForm.get('password_confirmation')?.dirty || userForm.get('password_confirmation')?.touched)" class="invalid-feedback d-block">
+                    <div *ngIf="userForm.get('password_confirmation')?.errors?.['required']">Debe confirmar la contraseña.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <a class="nav-link active" role="tab" data-bs-toggle="tab" href="#tab-1">
+                  <i class="fas fa-user me-1"></i>Datos Generales
+                </a>
+              </li>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" role="tab" data-bs-toggle="tab" href="#tab-3">
+                  <i class="fas fa-user-shield me-1"></i>Roles y Permisos
+                </a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <!-- Tab: Datos Generales -->
+              <div class="tab-pane active" role="tabpanel" id="tab-1">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label"><span class="required-asterisk">*</span>Email</label>
+                    <input
+                      class="form-control"
+                      formControlName="email"
+                      maxlength="100"
+                      placeholder="usuario@ejemplo.com"
+                      [class.is-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+                    <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="invalid-feedback">
+                      <div *ngIf="userForm.get('email')?.errors?.['required']">El email es obligatorio.</div>
+                      <div *ngIf="userForm.get('email')?.errors?.['email']">Ingrese un email válido.</div>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-muted small mt-3">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Datos generales y de contacto del usuario
+                </p>
+              </div>
+
+              <!-- Tab: Roles y Permisos -->
+              <div class="tab-pane" role="tabpanel" id="tab-3">
+                <app-roles-permissions
+                  [formGroup]="userForm"
+                  [availableRoles]="availableRoles"
+                  [initialPermissions]="[]"
+                ></app-roles-permissions>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-footer d-flex justify-content-end gap-2">
+          <button class="btn btn-secondary" (click)="goBack()">
+            <i class="fas fa-times me-1"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" (click)="onRegister()">
+            <i class="fas fa-save me-1"></i>Registrar Usuario
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

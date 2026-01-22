@@ -1,0 +1,301 @@
+<app-sidebar></app-sidebar>
+<main class="main-content">
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center">
+              <div class="avatar-container me-4">
+                <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center">
+                  {{ profile?.name?.charAt(0)?.toUpperCase() || 'U' }}
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h2 class="mb-1">{{ profile?.name || 'Cargando...' }}</h2>
+                <p class="text-muted mb-0">
+                  <i class="bi bi-envelope me-2"></i>{{ profile?.email || '-' }}
+                </p>
+                <p class="text-muted mb-0" *ngIf="profile?.phone">
+                  <i class="bi bi-telephone me-2"></i>{{ profile?.phone }}
+                </p>
+              </div>
+              <div *ngIf="profile?.employee" class="text-end">
+                <span class="badge bg-success fs-6 mb-2">
+                  <i class="bi bi-person-badge me-1"></i>
+                  {{ profile?.employee?.employee_number || 'Empleado' }}
+                </span>
+                <p class="mb-0 text-muted small">
+                  {{ profile?.employee?.job_position?.name || 'Sin puesto' }}
+                </p>
+                <p class="mb-0 text-muted small">
+                  {{ profile?.employee?.department?.name || '' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3 text-muted">Cargando perfil...</p>
+    </div>
+
+    <!-- Main content -->
+    <div *ngIf="!loading" class="row">
+      <!-- Acciones Rápidas -->
+      <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0">
+              <i class="bi bi-lightning-charge text-warning me-2"></i>
+              Acciones Rápidas
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-3">
+              <!-- Registrar Asistencia -->
+              <button
+                class="btn btn-outline-primary text-start py-3 action-btn"
+                (click)="registerAttendance()">
+                <i class="bi bi-camera-fill me-3 fs-5"></i>
+                <span>
+                  <strong class="d-block">Registrar Asistencia</strong>
+                  <small class="text-muted">Entrada/Salida con foto</small>
+                </span>
+              </button>
+
+              <!-- Solicitar Vacaciones -->
+              <button
+                class="btn btn-outline-success text-start py-3 action-btn"
+                (click)="requestVacation()"
+                [disabled]="!canRequestVacation">
+                <i class="bi bi-sun-fill me-3 fs-5"></i>
+                <span>
+                  <strong class="d-block">Solicitar Vacaciones</strong>
+                  <small class="text-muted">Programar días de descanso</small>
+                </span>
+              </button>
+
+              <!-- Solicitar Permiso -->
+              <button
+                class="btn btn-outline-info text-start py-3 action-btn"
+                (click)="requestLeave()"
+                [disabled]="!canRequestLeave">
+                <i class="bi bi-clock-history me-3 fs-5"></i>
+                <span>
+                  <strong class="d-block">Solicitar Permiso</strong>
+                  <small class="text-muted">Permisos y ausencias</small>
+                </span>
+              </button>
+
+              <!-- Registrar Incapacidad -->
+              <button
+                class="btn btn-outline-warning text-start py-3 action-btn"
+                (click)="registerDisability()"
+                [disabled]="!canRegisterDisability">
+                <i class="bi bi-bandaid me-3 fs-5"></i>
+                <span>
+                  <strong class="d-block">Registrar Incapacidad</strong>
+                  <small class="text-muted">Subir incapacidad médica</small>
+                </span>
+              </button>
+
+              <!-- Crear Solicitud de Compra (condicional) -->
+              <button
+                *ngIf="canCreatePurchaseRequest"
+                class="btn btn-outline-secondary text-start py-3 action-btn"
+                (click)="createPurchaseRequest()">
+                <i class="bi bi-cart-plus me-3 fs-5"></i>
+                <span>
+                  <strong class="d-block">Solicitud de Compra</strong>
+                  <small class="text-muted">Crear nueva solicitud</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del perfil -->
+      <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm border-0">
+          <!-- Tabs -->
+          <div class="card-header bg-white border-bottom p-0">
+            <ul class="nav nav-tabs card-header-tabs">
+              <li class="nav-item">
+                <button
+                  class="nav-link px-4 py-3"
+                  [class.active]="activeTab === 'info'"
+                  (click)="setActiveTab('info')">
+                  <i class="bi bi-person me-2"></i>
+                  Información
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link px-4 py-3"
+                  [class.active]="activeTab === 'fiscal'"
+                  (click)="setActiveTab('fiscal')">
+                  <i class="bi bi-file-earmark-text me-2"></i>
+                  Datos Fiscales
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link px-4 py-3"
+                  [class.active]="activeTab === 'employment'"
+                  (click)="setActiveTab('employment')">
+                  <i class="bi bi-briefcase me-2"></i>
+                  Empleo
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="card-body p-4">
+            <!-- Información General -->
+            <div *ngIf="activeTab === 'info'">
+              <h5 class="mb-4">Información General</h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Nombre Completo</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.name || '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Correo Electrónico</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.email || '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Teléfono</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.phone || '-' }}</p>
+                </div>
+                <div class="col-md-6" *ngIf="profile?.employee">
+                  <label class="form-label text-muted small">Número de Empleado</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.employee?.employee_number || '-' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos Fiscales -->
+            <div *ngIf="activeTab === 'fiscal'">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">Datos Fiscales</h5>
+              </div>
+
+              <form [formGroup]="fiscalForm" (ngSubmit)="saveFiscalData()">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">RFC</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="rfc"
+                      placeholder="XAXX010101000"
+                      [class.is-invalid]="fiscalForm.get('rfc')?.invalid && fiscalForm.get('rfc')?.touched">
+                    <div class="invalid-feedback">Formato de RFC inválido</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">CURP</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="curp"
+                      placeholder="XAXX010101HDFXXX00"
+                      [class.is-invalid]="fiscalForm.get('curp')?.invalid && fiscalForm.get('curp')?.touched">
+                    <div class="invalid-feedback">Formato de CURP inválido</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Número IMSS</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="imss_number"
+                      placeholder="00000000000">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Banco</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="bank_name"
+                      placeholder="Nombre del banco">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Número de Cuenta</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="bank_account"
+                      placeholder="0000000000">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">CLABE Interbancaria</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="clabe"
+                      placeholder="000000000000000000"
+                      [class.is-invalid]="fiscalForm.get('clabe')?.invalid && fiscalForm.get('clabe')?.touched">
+                    <div class="invalid-feedback">La CLABE debe tener 18 dígitos</div>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="savingFiscal">
+                    <span *ngIf="savingFiscal" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!savingFiscal" class="bi bi-save me-2"></i>
+                    {{ savingFiscal ? 'Guardando...' : 'Guardar Datos Fiscales' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Datos de Empleo -->
+            <div *ngIf="activeTab === 'employment'">
+              <h5 class="mb-4">Información de Empleo</h5>
+
+              <div *ngIf="!profile?.employee" class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                No hay información de empleo vinculada a tu cuenta.
+              </div>
+
+              <div *ngIf="profile?.employee" class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Número de Empleado</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.employee?.employee_number || '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Fecha de Ingreso</label>
+                  <p class="form-control-plaintext fw-medium">{{ formatDate(profile?.employee?.hire_date) }}</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Puesto</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.employee?.job_position?.name || '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Departamento</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.employee?.department?.name || '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-muted small">Área</label>
+                  <p class="form-control-plaintext fw-medium">{{ profile?.employee?.area?.name || '-' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

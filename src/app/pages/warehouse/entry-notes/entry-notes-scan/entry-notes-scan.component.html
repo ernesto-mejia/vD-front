@@ -1,0 +1,374 @@
+<div class="pb-3">
+  <app-sidebar></app-sidebar>
+</div>
+
+<main class="container-fluid p-4">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h5 class="mb-0">
+                <i class="fas fa-barcode me-2"></i>Escaneo de Nota de Entrada
+              </h5>
+              <small *ngIf="note">{{ note.purchase_order_code }} - {{ note.provider_name }}</small>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <div class="text-end">
+                <div class="fw-semibold">{{ scannerName }}</div>
+                <small class="text-light">Tiempo: {{ elapsedLabel }}</small>
+              </div>
+              <span
+                class="badge"
+                [ngClass]="note?.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'"
+              >
+                {{ note?.status === 'completed' ? 'Completada' : 'Pendiente' }}
+              </span>
+              <div class="btn-group">
+                <button class="btn btn-outline-light btn-sm" (click)="goBack()">
+                  <i class="fas fa-arrow-left me-1"></i>Regresar
+                </button>
+                <button class="btn btn-outline-light btn-sm" (click)="goToPreview()">
+                  <i class="fas fa-eye me-1"></i>Vista previa
+                </button>
+                <button
+                  class="btn btn-warning btn-sm"
+                  [disabled]="isLoading || note?.status === 'completed'"
+                  *ngIf="note?.status !== 'completed'"
+                  (click)="closeEntryNote()"
+                >
+                  <i class="fas fa-check me-1"></i>Cerrar nota
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div *ngIf="note?.status === 'completed'" class="alert alert-success mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <strong>Nota cerrada.</strong> Solo se muestran los productos recibidos.
+              </div>
+              <div class="text-end">
+                <span class="badge bg-dark">ordership_id: {{ note?.purchase_order_code }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3" *ngIf="note?.status !== 'completed'">
+            <div class="col-12 col-lg-4">
+              <div class="scan-panel">
+                <h6 class="mb-3">Captura de escaneo</h6>
+                <div class="input-group mb-3">
+                  <input
+                    class="form-control"
+                    placeholder="Escanea el código de barras..."
+                    [(ngModel)]="scanCode"
+                    (keyup.enter)="onScanSubmit()"
+                    [disabled]="isProcessingScan || isLoading"
+                  />
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    (click)="onScanSubmit()"
+                    [disabled]="isProcessingScan || isLoading"
+                  >
+                    <span *ngIf="!isProcessingScan">Procesar</span>
+                    <span *ngIf="isProcessingScan">
+                      <i class="fas fa-spinner fa-spin"></i> Procesando...
+                    </span>
+                  </button>
+                </div>
+
+                <div *ngIf="assignmentMode" class="alert alert-warning">
+                  <strong>GTIN no encontrado.</strong> Selecciona un producto de la orden para asignar el código.
+                  <div class="mt-3">
+                    <select class="form-select mb-2" [(ngModel)]="assignItemId">
+                      <option [ngValue]="null">Selecciona un producto...</option>
+                      <option *ngFor="let item of note?.items" [ngValue]="item.id">
+                        {{ item.name }} ({{ item.qty }} uds)
+                      </option>
+                    </select>
+                    <button class="btn btn-outline-dark btn-sm" (click)="assignGtinToItem()">
+                      Asignar GTIN
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="currentItem && currentScan" class="scan-form">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-primary mb-0">{{ currentItem.name }}</h6>
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="cancelCurrentScan()"
+                      [disabled]="isLoading"
+                    >
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-12">
+                      <label class="form-label">Lote</label>
+                      <input class="form-control" [(ngModel)]="currentScan.lot" [disabled]="isLoading" />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">GTIN</label>
+                      <input class="form-control" [(ngModel)]="currentScan.gtin" [disabled]="isLoading" />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">REF</label>
+                      <input class="form-control" [(ngModel)]="currentScan.ref" [disabled]="isLoading" />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Caducidad</label>
+                      <input type="date" class="form-control" [(ngModel)]="currentScan.expiration_date" [disabled]="isLoading" />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Fabricación</label>
+                      <input type="date" class="form-control" [(ngModel)]="currentScan.manufacture_date" [disabled]="isLoading" />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Cantidad</label>
+                      <input type="number" min="1" class="form-control" [(ngModel)]="currentScan.qty" [disabled]="isLoading" />
+                      <small class="text-muted">
+                        Disponible: {{ (currentItem.qty - (currentItem.scanned_qty || 0)) }} uds
+                      </small>
+                    </div>
+                  </div>
+                  <button
+                    class="btn btn-success w-100 mt-3"
+                    (click)="addScan()"
+                    [disabled]="isLoading"
+                  >
+                    <span *ngIf="!isLoading">
+                      <i class="fas fa-plus-circle me-2"></i>Agregar escaneo
+                    </span>
+                    <span *ngIf="isLoading">
+                      <i class="fas fa-spinner fa-spin me-2"></i>Guardando...
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+              <div class="list-panel">
+                <h6 class="mb-3">
+                  Pendientes por escanear
+                  <span class="badge bg-secondary ms-1">{{ pendingItems.length }}</span>
+                </h6>
+                <div *ngIf="pendingItems.length; else noPending">
+                  <div class="pending-item" *ngFor="let item of pendingItems">
+                    <div class="fw-semibold">{{ item.name }}</div>
+                    <small class="text-muted">
+                      Cantidad: {{ item.qty - (item.scanned_qty || 0) }} / {{ item.qty }}
+                    </small>
+                    <div class="tag">{{ item.storage_type }}</div>
+                  </div>
+                </div>
+                <ng-template #noPending>
+                  <p class="text-muted mb-0">No hay productos pendientes.</p>
+                </ng-template>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+              <div class="list-panel scanned-panel">
+                <div class="panel-header-compact">
+                  <h6 class="mb-0">
+                    <i class="fas fa-check-circle text-success me-2"></i>Productos escaneados
+                  </h6>
+                  <span class="badge bg-success">{{ scannedByProduct.length }}</span>
+                </div>
+                <div class="scanned-products-scroll" *ngIf="scannedByProduct.length; else noScanned">
+                  <div class="scanned-product-compact" *ngFor="let product of scannedByProduct; let i = index">
+                    <div class="product-compact-header">
+                      <div class="product-compact-info">
+                        <span class="product-compact-number">{{ i + 1 }}</span>
+                        <div class="product-compact-name" [title]="product.item.name">{{ product.item.name }}</div>
+                      </div>
+                      <span class="product-compact-total">{{ product.totalScanned }}</span>
+                    </div>
+                    <div class="lots-compact-list">
+                      <div class="lot-compact-item" *ngFor="let lotInfo of product.lots; let lotIndex = index">
+                        <div class="lot-compact-header">
+                          <span class="lot-compact-number">L{{ lotIndex + 1 }}</span>
+                          <span class="lot-compact-qty">{{ lotInfo.qty }}</span>
+                        </div>
+                        <div class="lot-compact-info">
+                          <div class="lot-compact-row">
+                            <i class="fas fa-tag"></i>
+                            <span class="lot-compact-text" [title]="lotInfo.lot">{{ lotInfo.lot }}</span>
+                          </div>
+                          <div class="lot-compact-row">
+                            <i class="fas fa-barcode"></i>
+                            <span class="lot-compact-text lot-compact-gtin" [title]="lotInfo.gtin">{{ lotInfo.gtin }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noScanned>
+                  <div class="empty-state-compact">
+                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0 small">Aún no hay productos escaneados</p>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3" *ngIf="note?.status === 'completed'">
+            <div class="col-12">
+              <div class="list-panel">
+                <div class="panel-header-compact">
+                  <h6 class="mb-0">
+                    <i class="fas fa-box-open text-success me-2"></i>Productos recibidos
+                  </h6>
+                  <span class="badge bg-success">{{ scannedByProduct.length || scannedItems.length }}</span>
+                </div>
+                <div class="completed-products-grid" *ngIf="scannedByProduct.length; else showScannedItems">
+                  <div class="scanned-product-compact" *ngFor="let product of scannedByProduct; let i = index">
+                    <div class="product-compact-header">
+                      <div class="product-compact-info">
+                        <span class="product-compact-number">{{ i + 1 }}</span>
+                        <div class="product-compact-name" [title]="product.item.name">{{ product.item.name }}</div>
+                      </div>
+                      <span class="product-compact-total">{{ product.totalScanned }}</span>
+                    </div>
+                    <div class="lots-compact-list">
+                      <div class="lot-compact-item" *ngFor="let lotInfo of product.lots; let lotIndex = index">
+                        <div class="lot-compact-header">
+                          <span class="lot-compact-number">L{{ lotIndex + 1 }}</span>
+                          <span class="lot-compact-qty">{{ lotInfo.qty }}</span>
+                        </div>
+                        <div class="lot-compact-info">
+                          <div class="lot-compact-row">
+                            <i class="fas fa-tag"></i>
+                            <span class="lot-compact-text" [title]="lotInfo.lot">{{ lotInfo.lot }}</span>
+                          </div>
+                          <div class="lot-compact-row">
+                            <i class="fas fa-barcode"></i>
+                            <span class="lot-compact-text lot-compact-gtin" [title]="lotInfo.gtin">{{ lotInfo.gtin }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #showScannedItems>
+                  <div class="completed-products-grid" *ngIf="scannedItems.length; else noCompleted">
+                    <div class="scanned-product-compact" *ngFor="let item of scannedItems; let i = index">
+                      <div class="product-compact-header">
+                        <div class="product-compact-info">
+                          <span class="product-compact-number">{{ i + 1 }}</span>
+                          <div class="product-compact-name" [title]="item.name">{{ item.name }}</div>
+                        </div>
+                        <span class="product-compact-total">{{ item.scanned_qty || 0 }}</span>
+                      </div>
+                      <div class="lots-compact-list">
+                        <div class="lot-compact-item">
+                          <div class="lot-compact-info">
+                            <div class="lot-compact-row">
+                              <i class="fas fa-tag"></i>
+                              <span class="lot-compact-text">{{ item.lot || 'No especificado' }}</span>
+                            </div>
+                            <div class="lot-compact-row">
+                              <i class="fas fa-barcode"></i>
+                              <span class="lot-compact-text lot-compact-gtin" [title]="item.gtin">{{ item.gtin || 'No especificado' }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+                <ng-template #noCompleted>
+                  <div class="empty-state-compact">
+                    <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0 small">No hay productos recibidos registrados.</p>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal de productos faltantes -->
+<div class="modal fade" [class.show]="showMissingItemsModal" [style.display]="showMissingItemsModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2"></i>Productos Faltantes
+        </h5>
+        <button type="button" class="btn-close" (click)="closeMissingItemsModal()" [disabled]="isLoading"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Se detectaron productos faltantes.</strong>
+          Agregue una observación para cada producto antes de cerrar la nota.
+        </div>
+
+        <div class="missing-items-list">
+          <div class="missing-item-card" *ngFor="let missing of missingItemsWithObservations; let i = index">
+            <div class="missing-item-header">
+              <div class="d-flex align-items-start gap-2">
+                <span class="missing-item-number">{{ i + 1 }}</span>
+                <div class="flex-grow-1">
+                  <div class="missing-item-name">{{ missing.item.name }}</div>
+                  <div class="missing-item-qty">
+                    <i class="fas fa-box me-1"></i>
+                    Faltante: <strong>{{ missing.item.qty - (missing.item.scanned_qty || 0) }}</strong> de {{ missing.item.qty }} uds
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="missing-item-observation">
+              <label class="form-label fw-semibold">
+                <i class="fas fa-comment-dots me-1"></i>Observación *
+              </label>
+              <textarea
+                class="form-control"
+                rows="2"
+                [(ngModel)]="missing.observation"
+                placeholder="Ej: Producto no enviado por el proveedor, se solicitará en próxima orden..."
+                [disabled]="isLoading"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeMissingItemsModal()" [disabled]="isLoading">
+          <i class="fas fa-times me-1"></i>Cancelar
+        </button>
+        <button type="button" class="btn btn-warning" (click)="confirmMissingItems()" [disabled]="isLoading">
+          <span *ngIf="!isLoading">
+            <i class="fas fa-check me-1"></i>Continuar con cierre
+          </span>
+          <span *ngIf="isLoading">
+            <i class="fas fa-spinner fa-spin me-1"></i>Procesando...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showMissingItemsModal" *ngIf="showMissingItemsModal"></div>
+
+<!-- Overlay de carga general -->
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+    <p class="mt-3 text-white">Procesando...</p>
+  </div>
+</div>

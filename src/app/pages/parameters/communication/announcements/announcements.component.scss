@@ -1,0 +1,60 @@
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+  th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    border-bottom-width: 1px;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.modal.show {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.card.bg-light {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e9ecef;
+
+  .card-title {
+    color: #495057;
+    font-size: 0.9rem;
+  }
+}
+
+.form-check-label {
+  cursor: pointer;
+}

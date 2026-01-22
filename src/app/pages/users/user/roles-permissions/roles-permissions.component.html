@@ -1,0 +1,151 @@
+<div [formGroup]="formGroup" class="roles-permissions-container">
+  <!-- Sección de Roles y Status -->
+  <div class="row g-3 mb-4">
+
+    <!-- Sección de Roles - Solo visible si el usuario tiene permisos para ver roles -->
+    <div class="col-md-6" *ngIf="canViewRoles">
+      <label class="form-label field-label">Roles Asignados *</label>
+      <ng-select
+        [items]="availableRoles"
+        bindLabel="name"
+        bindValue="name"
+        [multiple]="true"
+        placeholder="Selecciona uno o más roles"
+        formControlName="roles"
+        [searchable]="true"
+        [clearable]="true"
+        notFoundText="No se encontraron roles"
+        [closeOnSelect]="false"
+        [loading]="availableRoles.length === 0"
+        loadingText="Cargando roles..."
+        [class.is-invalid]="
+          formGroup.get('roles')?.invalid &&
+          formGroup.get('roles')?.touched
+        "
+      >
+        <ng-template ng-option-tmp let-item="item">
+          <div>
+            <strong>{{ item.name }}</strong>
+          </div>
+        </ng-template>
+      </ng-select>
+      <div
+        *ngIf="
+          formGroup.get('roles')?.invalid && formGroup.get('roles')?.touched
+        "
+        class="invalid-feedback d-block"
+      >
+        Debe seleccionar al menos un rol
+      </div>
+    </div>
+    <div class="col-md-6" [ngClass]="{'col-md-12': !canViewRoles}">
+      <label class="form-label field-label">Status *</label>
+      <select
+        class="form-control"
+        formControlName="status"
+        title="Estatus"
+        [class.is-invalid]="
+          formGroup.get('status')?.invalid &&
+          formGroup.get('status')?.touched
+        "
+      >
+        <option value="" disabled>Selecciona un estatus</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+      <div
+        *ngIf="
+          formGroup.get('status')?.invalid &&
+          formGroup.get('status')?.touched
+        "
+        class="invalid-feedback"
+      >
+        El status es obligatorio
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Permisos - Solo visible si el usuario tiene permisos para ver permisos -->
+  <section class="mt-4" *ngIf="canViewPermissions">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card shadow">
+            <div class="card-header py-2">
+              <i class="fas fa-shield-alt me-2"></i>Permisos Directos
+            </div>
+            <div class="card-body">
+              <div class="row mb-2">
+                <div class="col-12">
+                  <small class="text-muted">
+                    Seleccione permisos adicionales (además de los que vienen
+                    con los roles asignados)
+                  </small>
+                </div>
+              </div>
+              <div class="row" *ngIf="permissionCategories.length === 0 && loading">
+                <div class="col-12">
+                  <p class="text-muted">Cargando permisos...</p>
+                </div>
+              </div>
+
+              <!-- Permisos en grid de categorías -->
+              <div class="mb-4">
+                <label
+                  class="form-label text-muted small text-uppercase fw-bold mb-3 d-block"
+                >
+                  <i class="fas fa-lock-open me-2 text-success"></i>Seleccionar
+                  Permisos
+                </label>
+                <div class="permissions-grid">
+                  <div
+                    *ngFor="let category of permissionCategories"
+                    class="permission-card"
+                  >
+                    <div class="permission-card-header">
+                      <h6 class="mb-0">
+                        <i class="fas fa-folder-open me-2"></i>
+                        {{ category.name }}
+                      </h6>
+                    </div>
+                    <div class="permission-card-body">
+                      <div
+                        *ngFor="let permission of category.permissions"
+                        class="form-check mb-2"
+                      >
+                        <input
+                          title="seleccionar permisos"
+                          class="form-check-input"
+                          type="checkbox"
+                          [id]="'perm-' + permission.id"
+                          [value]="permission.name"
+                          [title]="isPermissionFromRole(permission) ? 'Permiso heredado de rol (solo lectura)' : 'Seleccionar permiso'"
+                          [checked]="isPermissionChecked(permission)"
+                          [disabled]="loading || isPermissionFromRole(permission)"
+                          (change)="onPermissionChange($event, permission)"
+                        />
+                        <label
+                          class="form-check-label d-flex align-items-center"
+                          [for]="'perm-' + permission.id"
+                        >
+                          <span class="permission-name grow">{{
+                            permission.name
+                          }}</span>
+                          <span *ngIf="isPermissionFromRole(permission)"
+                                class="badge bg-info ms-2"
+                                title="Permiso heredado de roles asignados">
+                            <i class="fas fa-users"></i> Rol
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

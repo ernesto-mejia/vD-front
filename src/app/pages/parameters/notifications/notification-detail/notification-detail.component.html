@@ -1,0 +1,105 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="container py-3">
+      <!-- Loading state -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2 text-muted">Cargando notificación...</p>
+      </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="alert alert-danger">
+    {{ error }}
+    <button class="btn btn-link" (click)="goBack()">Volver al listado</button>
+  </div>
+
+  <!-- Notification detail -->
+  <div *ngIf="item as n" class="card">
+    <div class="card-header text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fa fa-bell"></i> {{ n.title }}
+      </h5>
+      <button class="btn btn-outline-light btn-sm" (click)="goBack()">
+        <i class="fa fa-arrow-left"></i> Volver
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-light border mb-4" *ngIf="n.body">
+        <strong>Mensaje:</strong>
+        <p class="mb-0 mt-2">{{ n.body }}</p>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Módulo:</strong> <span class="badge bg-info ms-2">{{ n.module }}</span>
+        </div>
+        <div class="col-md-6">
+          <strong>Acción:</strong> <span class="badge bg-secondary ms-2">{{ n.action }}</span>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Severidad:</strong> <span [class]="getSeverityClass(n.severity)" class="ms-2">{{ n.severity }}</span>
+        </div>
+        <div class="col-md-6">
+          <strong>Estado:</strong> <span [class]="getStatusClass(n.status)" class="ms-2">{{ n.status }}</span>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6" *ngIf="n.entityId">
+          <strong>Entidad ID:</strong> {{ n.entityId }}
+        </div>
+        <div class="col-md-6">
+          <strong>Creada:</strong> {{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Solo mostrar botón de atender si viene del inbox y NO está atendida -->
+      <div class="d-flex gap-2" *ngIf="isInboxView && n.status !== 'attended'">
+        <button class="btn btn-primary btn-lg" (click)="markAttended()">
+          <i class="fa fa-check"></i> Marcar como atendida
+        </button>
+      </div>
+
+      <!-- Mensaje si ya está atendida -->
+      <div class="alert alert-success" *ngIf="n.status === 'attended'">
+        <i class="fa fa-check-circle"></i> Esta notificación ya fue atendida.
+      </div>
+    </div>
+
+    <!-- Logs section -->
+    <div class="card-footer" *ngIf="logs.length > 0">
+      <h6 class="mb-3">Historial de acciones</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Acción</th>
+              <th>Detalles</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of logs">
+              <td>{{ log.userName }}</td>
+              <td><span class="badge bg-secondary">{{ log.action }}</span></td>
+              <td>{{ log.details || '-' }}</td>
+              <td>{{ log.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
