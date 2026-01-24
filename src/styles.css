@@ -4,9 +4,7 @@
 @import "@ng-select/ng-select/themes/default.theme.css";
 
 /* COMPENSAR NAVBAR FIXED-TOP */
-body {
-  padding-top: 60px; /* Ajustar según altura real del navbar */
-}
+
 
 .layout {
   min-height: calc(100vh - 60px);

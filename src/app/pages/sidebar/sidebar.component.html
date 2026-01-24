@@ -10,15 +10,13 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="navbar-collapse"
-           [class.collapse]="!isMenuOpen"
-           [class.show]="isMenuOpen"
-           id="navbarNavDropdown">
+          [class.collapse]="!isMenuOpen"
+          [class.show]="isMenuOpen"
+          id="navbarNavDropdown">
         <app-content-menu></app-content-menu>
       </div>
       <!-- Badge de notificaciones -->
       <app-notifications-badge></app-notifications-badge>
-      <!-- Logo alineado a la derecha -->
-      <img src="media/logo_opt.png" alt="Logo" class="ms-auto" style="height: 35px;">
     </div>
   </nav>
 </div>

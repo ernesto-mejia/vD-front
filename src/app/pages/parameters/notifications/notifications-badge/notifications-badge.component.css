@@ -1,3 +1,8 @@
+.bell {
+  margin-right: 10px;
+  margin-top: 5px;
+}
+
 .nav-link {
   cursor: pointer;
   position: relative;

@@ -19,8 +19,7 @@
         <li>
           <a>
             <span class="dropdown-item-text text-primary"
-              ><small
-                ><i class="fa fa-user-circle me-1" aria-hidden="true"></i>
+              ><small>
                 {{ this.xuser_name }}
               </small></span
             >
@@ -99,14 +98,6 @@
             [ngClass]="{ active: activeSection === 'emailConfig' }"
             (click)="setActiveSubSection('parameters', 'emailConfig')"
             >Configuración de Email</a
-          >
-        </li>
-        <li>
-          <a class="dropdown-item text-primary"
-            href="parameters/communication/announcements"
-            [ngClass]="{ active: activeSection === 'announcements' }"
-            (click)="setActiveSubSection('parameters', 'announcements')"
-            >Anuncios Internos</a
           >
         </li>
         <li>

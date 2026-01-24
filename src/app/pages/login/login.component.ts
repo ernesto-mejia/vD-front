@@ -59,9 +59,11 @@ export class LoginComponent implements OnInit {
         });
       }
 
-      // Guardar URL de retorno si existe
-      if (params['returnUrl']) {
+      // Guardar URL de retorno si existe y es válida
+      if (params['returnUrl'] && typeof params['returnUrl'] === 'string' && params['returnUrl'].startsWith('/')) {
         this.returnUrl = params['returnUrl'];
+      } else {
+        this.returnUrl = '/dashboard'; // Valor por defecto seguro
       }
     });
 
@@ -107,21 +109,28 @@ export class LoginComponent implements OnInit {
         .login(this.userLogin.userName, this.userLogin.password)
         .subscribe(
           async (response: any) => {
-            if (response.success) {
-               const fakeToken = response.token; // Token ficticio
+            if (response.success && response.token) {
+              const token = response.token; // Token JWT del backend
               this.user_id = response.user_id; // Guardamos el ID del usuario
               this.email = response.email || response.user_email || ''; // Guardamos el email del usuario
-              this.authService.setToken(fakeToken,this.user_id); // Guardamos el token ficticio
-              this.sharedService.updateUserName(this.email); // Actualizamos el email después de setToken
 
-              // *** CRÍTICO: Cargar permisos del usuario después del login ***
-              await this.loadpubliccatalogs();
+              // Guardamos el token y datos de usuario
+              this.authService.setToken(token, this.user_id);
+              this.sharedService.updateUserName(this.email);
+
+              Swal.close(); // Cierra el spinner
 
               try {
-                // Redirige al dashboard o a la URL de retorno
-                Swal.close(); // Cierra el spinner
+                // *** CRÍTICO: Cargar permisos del usuario después del login ***
+                await this.loadpubliccatalogs();
 
-                this.router.navigate([this.returnUrl]);
+                // Validar que returnUrl sea seguro
+                const safeReturnUrl = this.returnUrl && this.returnUrl.startsWith('/') ? this.returnUrl : '/dashboard';
+
+                // Pequeña espera para asegurar que los datos se guardaron
+                setTimeout(() => {
+                  this.router.navigate([safeReturnUrl]);
+                }, 100);
 
                 // Mensaje de éxito opcional
                 Swal.fire({

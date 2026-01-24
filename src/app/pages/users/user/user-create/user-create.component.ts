@@ -118,7 +118,7 @@ export class UserCreateComponent implements OnInit {
           text: response.message || 'Usuario creado correctamente.',
           showDenyButton: true,
           showCancelButton: true,
-          confirmButtonText: 'Ver Usuario',
+          // confirmButtonText: 'Ver Usuario',
           denyButtonText: 'Agregar Otro',
           cancelButtonText: 'Regresar',
           allowOutsideClick: false,

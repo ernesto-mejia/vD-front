@@ -18,14 +18,12 @@ export class AuthService {
   // Método para el login
   login(username: string, password: string): Observable<any> {
     const headers = { 'Content-Type': 'application/json' };
-    const credentials = { email: username, password: password }; // Credenciales para el login con email
-    //const credentials = { user_name: username, password: password }; // Credenciales para el login con user_name (original)
+    const credentials = { userName: username, password: password }; // Credenciales para el login con user_name
 
     // Realiza la solicitud al backend
     return this.http.post(this.urlMaster + 'auth/login', credentials, {
       headers,
     });
-    // return this.http.post(this.urlMaster + 'login', credentials, { headers });
   }
 
   // Método para cerrar sesión

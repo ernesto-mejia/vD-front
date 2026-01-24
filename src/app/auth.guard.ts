@@ -1,5 +1,5 @@
  import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
 import Swal from 'sweetalert2';
 
@@ -10,19 +10,12 @@ export class AuthGuard implements CanActivate {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(): boolean {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     if (this.authService.isAuthenticated()) {
       return true; // Permitir acceso si el usuario está autenticado
     } else {
-      // Mostrar alerta y redirigir al login
-      Swal.fire({
-        icon: 'warning',
-        title: 'La sesión ha expirado',
-        text: 'Por favor, inicia sesión para continuar.',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        this.router.navigate(['/login']); // Redirigir al login
-      });
+      // Redirigir al login sin alert si viene de una ruta protegida
+      this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
       return false; // Bloquear acceso
     }
   }
